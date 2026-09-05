@@ -1,0 +1,29 @@
+enum Role {
+  NEEDY
+  DONOR
+  ADMIN
+}
+
+enum AuthProvider {
+  CREDENTIAL
+  GOOGLE
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+enum DonationRequestStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  COMPLETED
+}
+
+enum DonationStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
