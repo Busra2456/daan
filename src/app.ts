@@ -1,10 +1,13 @@
 import cors from "cors";
 import express from "express";
-
+import { AuthRoutes } from "./app/module/auth/auth.route";
+import cookieParser from "cookie-parser";
+import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (_req, res) => {
 	res.status(200).json({
@@ -12,5 +15,9 @@ app.get("/", (_req, res) => {
 		message: "Daan Backend is running!",
 	});
 });
+
+app.use("/api/auth", AuthRoutes);
+app.use(globalErrorHandler);
+
 
 export default app;
