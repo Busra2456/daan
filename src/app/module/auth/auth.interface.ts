@@ -1,5 +1,9 @@
-
 import { Role } from "../../../../prisma/src/generated/prisma/enums";
+
+export interface ILoginUserPayload {
+  email: string;
+  password: string;
+}
 
 export interface IRegisterUserPayload {
   name: string;
@@ -11,9 +15,9 @@ export interface IRegisterUserPayload {
   role?: Role;
 }
 
-export interface ILoginUserPayload {
+export interface IVerifyEmailPayload {
   email: string;
-  password: string;
+  otp: string;
 }
 
 export interface IRequestUser {
@@ -21,4 +25,18 @@ export interface IRequestUser {
   email: string;
   name: string;
   role: Role;
+}
+
+export interface IGoogleLoginPayload {
+  idToken: string;
+}
+
+export interface IForgotPasswordPayload {
+  email: string;
+}
+
+export interface IResetPasswordPayload {
+  email: string;
+  newPassword: string;
+  otp: string;
 }

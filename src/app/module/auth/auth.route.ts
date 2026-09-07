@@ -1,18 +1,24 @@
 import { Router } from "express";
 
 import { auth } from "../../middleware/checkAuth";
-import { validateRequest } from "../../middleware/validateRequest";
-
 import { AuthController } from "./auth.controller";
-import { UserValidation } from "./auth.validation";
 import { Role } from "../../../../prisma/src/generated/prisma/enums";
+import { validateRequest } from "../../middleware/validateRequest";
+import { UserValidation } from "./auth.validation";
 
 const router = Router();
 
+
 router.post(
   "/register",
-  validateRequest(UserValidation.RegisterUserZodSchema),
+  validateRequest(UserValidation.UserRegistrationZodSchema),
   AuthController.registerUser,
+);
+
+router.post(
+  "/verify-email",
+  validateRequest(UserValidation.EmailVerifyZodSchema),
+  AuthController.verifyEmail,
 );
 
 router.post(
@@ -23,7 +29,7 @@ router.post(
 
 router.get(
   "/me",
-  auth(Role.NEEDY, Role.DONOR, Role.ADMIN),
+  auth(Role.ADMIN, Role.NEEDY, Role.DONOR),
   AuthController.getMe,
 );
 
