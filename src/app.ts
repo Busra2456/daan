@@ -1,8 +1,9 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
-import { AuthRoutes } from "./app/module/auth/auth.route";
-import cookieParser from "cookie-parser";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
+import { AuthRoutes } from "./app/module/auth/auth.route";
+
 const app = express();
 
 app.use(cors());
@@ -18,6 +19,5 @@ app.get("/", (_req, res) => {
 
 app.use("/api/auth", AuthRoutes);
 app.use(globalErrorHandler);
-
 
 export default app;
