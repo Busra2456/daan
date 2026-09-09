@@ -4,28 +4,29 @@ import bcrypt from "bcryptjs";
 import ejs from "ejs";
 import httpStatus from "http-status";
 import type { JwtPayload, SignOptions } from "jsonwebtoken";
-
+import { googleClient } from "../../lib/googleAuth";
 import {
 	AuthProvider,
 	Role,
 	UserStatus,
-} from "../../../../prisma/src/generated/prisma/enums";
+} from "../../../generated/prisma/enums";
 
 import config from "../../config";
 import { transporter } from "../../lib/nodemailer";
-import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../lib/redis";
 import { AppError } from "../../utils/AppError";
 import { jwtUtils } from "../../utils/jwt";
-
 import type {
 	IForgotPasswordPayload,
+	IGoogleLoginPayload,
 	ILoginUserPayload,
 	IRegisterUserPayload,
 	IRequestUser,
 	IResetPasswordPayload,
 	IVerifyEmailPayload,
 } from "./auth.interface";
+import { prisma } from "../../lib/prisma";
+import { TokenPayload } from "google-auth-library";
 
 const registerUser = async (payload: IRegisterUserPayload) => {
 	const {
@@ -83,10 +84,6 @@ const registerUser = async (payload: IRegisterUserPayload) => {
 		},
 	});
 
-	// ========================================
-	// SAVE REGISTRATION DATA IN REDIS
-	// ========================================
-
 	const registrationKey = `daan-registration-data:${normalizedEmail}`;
 
 	const registrationData = {
@@ -106,13 +103,9 @@ const registerUser = async (payload: IRegisterUserPayload) => {
 		},
 	});
 
-	// ========================================
-	// SEND OTP EMAIL
-	// ========================================
-
 	const templatePath = path.join(
 		process.cwd(),
-		"src/app/templates/registration-user-otp.ejs",
+		"src/app/templates/registration-otp.ejs",
 	);
 
 	const templateData = {
@@ -137,10 +130,6 @@ const verifyEmail = async (payload: IVerifyEmailPayload) => {
 
 	const email = payload.email.trim().toLowerCase();
 
-	// ========================================
-	// GET OTP FROM REDIS
-	// ========================================
-
 	const otpKey = `daan-registration-otp:${email}`;
 
 	const redisOtp = await redisClient.get(otpKey);
@@ -152,10 +141,6 @@ const verifyEmail = async (payload: IVerifyEmailPayload) => {
 	if (redisOtp !== otp) {
 		throw new AppError(httpStatus.BAD_REQUEST, "OTP does not match");
 	}
-
-	// ========================================
-	// GET REGISTRATION DATA FROM REDIS
-	// ========================================
 
 	const registrationKey = `daan-registration-data:${email}`;
 
@@ -171,10 +156,6 @@ const verifyEmail = async (payload: IVerifyEmailPayload) => {
 	const registrationData = JSON.parse(
 		redisRegistrationData,
 	) as IRegisterUserPayload;
-
-	// ========================================
-	// CREATE USER + PROFILE
-	// ========================================
 
 	const result = await prisma.$transaction(async (tx) => {
 		const user = await tx.user.create({
@@ -196,10 +177,6 @@ const verifyEmail = async (payload: IVerifyEmailPayload) => {
 			},
 		});
 
-		// ========================================
-		// NEEDY PROFILE
-		// ========================================
-
 		if (user.role === Role.NEEDY) {
 			await tx.needy.create({
 				data: {
@@ -210,10 +187,6 @@ const verifyEmail = async (payload: IVerifyEmailPayload) => {
 				},
 			});
 		}
-
-		// ========================================
-		// DONOR PROFILE
-		// ========================================
 
 		if (user.role === Role.DONOR) {
 			await tx.donor.create({
@@ -229,15 +202,7 @@ const verifyEmail = async (payload: IVerifyEmailPayload) => {
 		return user;
 	});
 
-	// ========================================
-	// DELETE REDIS DATA
-	// ========================================
-
 	await redisClient.del([otpKey, registrationKey]);
-
-	// ========================================
-	// CREATE JWT
-	// ========================================
 
 	const jwtPayload = {
 		userId: result.id,
@@ -443,7 +408,7 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
 
 	const templatePath = path.join(
 		process.cwd(),
-		"src/app/templates/registration-user-otp.ejs",
+		"src/app/templates/password-reset-otp.ejs",
 	);
 
 	const templateData = {
@@ -467,18 +432,6 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
 	const email = payload.email.trim().toLowerCase();
 	const { otp, newPassword } = payload;
 
-	const otpKey = `daan-forgot-password-otp:${email}`;
-
-	const redisOtp = await redisClient.get(otpKey);
-
-	if (!redisOtp) {
-		throw new AppError(httpStatus.BAD_REQUEST, "Invalid or expired OTP");
-	}
-
-	if (redisOtp !== otp) {
-		throw new AppError(httpStatus.BAD_REQUEST, "OTP does not match");
-	}
-
 	const user = await prisma.user.findUnique({
 		where: {
 			email,
@@ -489,12 +442,35 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
 		throw new AppError(httpStatus.NOT_FOUND, "User not found");
 	}
 
+	if (user.status === UserStatus.BLOCKED) {
+		throw new AppError(httpStatus.FORBIDDEN, "User is blocked");
+	}
+
+	if (!user.emailVerified) {
+		throw new AppError(httpStatus.FORBIDDEN, "User is not verified");
+	}
+
 	if (user.isDeleted || user.status === UserStatus.DELETED) {
 		throw new AppError(httpStatus.FORBIDDEN, "User is deleted");
 	}
 
-	if (user.status === UserStatus.BLOCKED) {
-		throw new AppError(httpStatus.FORBIDDEN, "User is blocked");
+	if (user.googleId && user.authProvider === AuthProvider.GOOGLE) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"User has an account with Google",
+		);
+	}
+
+	const otpKey = `daan-forgot-password-otp:${email}`;
+
+	const redisOtp = await redisClient.get(otpKey);
+
+	if (!redisOtp) {
+		throw new AppError(httpStatus.BAD_REQUEST, "Invalid or expired OTP");
+	}
+
+	if (redisOtp !== otp) {
+		throw new AppError(httpStatus.BAD_REQUEST, "OTP does not match");
 	}
 
 	const hashedPassword = await bcrypt.hash(
@@ -512,8 +488,25 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
 		},
 	});
 
-	// Delete OTP after successful password reset
 	await redisClient.del(otpKey);
+
+	const templatePath = path.join(
+		process.cwd(),
+		"src/app/templates/reset-password-success.ejs",
+	);
+
+	const templateData = {
+		name: user.name,
+	};
+
+	const html = await ejs.renderFile(templatePath, templateData);
+
+	await transporter.sendMail({
+		from: config.email_sender,
+		to: user.email,
+		subject: "Password Changed",
+		html,
+	});
 };
 
 const refreshToken = async (token: string) => {
@@ -566,6 +559,165 @@ const refreshToken = async (token: string) => {
 	};
 };
 
+const googleLogin = async (payload: IGoogleLoginPayload) => {
+	let googleIdTokenPayload: TokenPayload | null | undefined = null;
+
+	// Verify Google ID Token
+	try {
+		const ticket = await googleClient.verifyIdToken({
+			idToken: payload.idToken,
+			audience: config.google_client_id,
+		});
+
+		googleIdTokenPayload = ticket.getPayload();
+	} catch (error) {
+		console.log("Google ID Token Verification Failed", error);
+
+		throw new AppError(
+			httpStatus.UNAUTHORIZED,
+			"Invalid or expired Google ID token",
+		);
+	}
+
+	if (!googleIdTokenPayload) {
+		throw new AppError(
+			httpStatus.UNAUTHORIZED,
+			"Invalid or expired Google ID token",
+		);
+	}
+
+	if (!googleIdTokenPayload.email) {
+		throw new AppError(httpStatus.BAD_REQUEST, "Google email not found");
+	}
+
+	if (!googleIdTokenPayload.name) {
+		throw new AppError(httpStatus.BAD_REQUEST, "Google user name not found");
+	}
+
+	const email = googleIdTokenPayload.email.trim().toLowerCase();
+	const googleId = googleIdTokenPayload.sub;
+
+	// Find existing Google user
+	let user = await prisma.user.findUnique({
+		where: {
+			googleId,
+		},
+	});
+
+	// If Google user does not exist, find by email
+	if (!user) {
+		const existingUser = await prisma.user.findUnique({
+			where: {
+				email,
+			},
+		});
+
+		// Existing credential account
+		if (existingUser) {
+			if (!existingUser.emailVerified) {
+				throw new AppError(httpStatus.FORBIDDEN, "Email is not verified");
+			}
+
+			if (existingUser.status === UserStatus.BLOCKED) {
+				throw new AppError(httpStatus.FORBIDDEN, "User is blocked");
+			}
+
+			if (
+				existingUser.isDeleted ||
+				existingUser.status === UserStatus.DELETED
+			) {
+				throw new AppError(httpStatus.FORBIDDEN, "User is deleted");
+			}
+
+			// Link Google account with existing account
+			user = await prisma.user.update({
+				where: {
+					id: existingUser.id,
+				},
+				data: {
+					googleId,
+					authProvider: AuthProvider.GOOGLE,
+				},
+			});
+		} else {
+			// Create new Google user
+			user = await prisma.user.create({
+				data: {
+					name: googleIdTokenPayload.name,
+					email,
+					googleId,
+					role: Role.NEEDY,
+					authProvider: AuthProvider.GOOGLE,
+					emailVerified: true,
+
+					needy: {
+						create: {
+							name: googleIdTokenPayload.name,
+						},
+					},
+				},
+			});
+
+			// Welcome email
+			const templatePath = path.join(
+				process.cwd(),
+				"src/app/templates/needy-welcome-email.ejs",
+			);
+
+			const templateData = {
+				name: user.name,
+			};
+
+			const html = await ejs.renderFile(templatePath, templateData);
+
+			await transporter.sendMail({
+				from: config.email_sender,
+				to: user.email,
+				subject: "Welcome To Daan - Donate With Trust",
+				html,
+			});
+		}
+	}
+
+	if (!user) {
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
+	}
+
+	// Final status checks
+	if (user.status === UserStatus.BLOCKED) {
+		throw new AppError(httpStatus.FORBIDDEN, "User is blocked");
+	}
+
+	if (user.isDeleted || user.status === UserStatus.DELETED) {
+		throw new AppError(httpStatus.FORBIDDEN, "User is deleted");
+	}
+
+	// Create JWT payload
+	const jwtPayload = {
+		userId: user.id,
+		name: user.name,
+		email: user.email,
+		role: user.role,
+	};
+
+	const accessToken = jwtUtils.createToken(
+		jwtPayload,
+		config.jwt_access_secret,
+		config.jwt_access_expires_in as SignOptions,
+	);
+
+	const refreshToken = jwtUtils.createToken(
+		jwtPayload,
+		config.jwt_refresh_secret,
+		config.jwt_refresh_expires_in as SignOptions,
+	);
+
+	return {
+		accessToken,
+		refreshToken,
+	};
+};
+
 export const AuthService = {
 	registerUser,
 	verifyEmail,
@@ -574,4 +726,5 @@ export const AuthService = {
 	refreshToken,
 	forgotPassword,
 	resetPassword,
+	googleLogin,
 };

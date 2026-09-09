@@ -6,6 +6,7 @@ model User {
   imageUrl String?
   phone    String?
   address  String?
+  googleId      String?      @unique
 
   role          Role         @default(NEEDY)
   status        UserStatus   @default(ACTIVE)

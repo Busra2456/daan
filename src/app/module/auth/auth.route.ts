@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Role } from "../../../../prisma/src/generated/prisma/enums";
+import { Role } from "../../../generated/prisma/enums";
 import { auth } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validateRequest";
 import { AuthController } from "./auth.controller";
@@ -14,7 +14,7 @@ console.log("getMe:", typeof AuthController.getMe);
 console.log("refreshToken:", typeof AuthController.refreshToken);
 console.log("forgotPassword:", typeof AuthController.forgotPassword);
 console.log("resetPassword:", typeof AuthController.resetPassword);
-
+console.log("googleLogin:", typeof AuthController.googleLogin);
 console.log(
 	"ForgotPasswordZodSchema:",
 	typeof UserValidation.ForgotPasswordZodSchema,
@@ -43,6 +43,11 @@ router.post(
 	AuthController.loginUser,
 );
 
+router.post(
+	"/google-login",
+	validateRequest(UserValidation.GoogleLoginZodSchema),
+	AuthController.googleLogin,
+);
 router.get(
 	"/me",
 	auth(Role.ADMIN, Role.NEEDY, Role.DONOR),

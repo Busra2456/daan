@@ -51,6 +51,10 @@ const LoginZodSchema = z.object({
 		),
 });
 
+const GoogleLoginZodSchema = z.object({
+	idToken: z.string().min(1, "Google ID token is required"),
+});
+
 const ForgotPasswordZodSchema = z.object({
 	email: z.email("Invalid email"),
 });
@@ -81,4 +85,5 @@ export const UserValidation = {
 	LoginZodSchema,
 	ForgotPasswordZodSchema,
 	ResetPasswordZodSchema,
+	GoogleLoginZodSchema,
 };
