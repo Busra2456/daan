@@ -7,10 +7,11 @@
  *
  * 🟢 You can import this file directly.
  */
+
+export type * from "./commonInputTypes";
 export type * from "./models/Admin";
 export type * from "./models/Donation";
 export type * from "./models/DonationRequest";
 export type * from "./models/Donor";
 export type * from "./models/Needy";
 export type * from "./models/User";
-export type * from "./commonInputTypes";

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Donation Completed - Daan</title>
+
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f7f7f7;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    max-width: 520px;
+    margin: 40px auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: center;
+  }
+
+  .logo {
+    font-size: 30px;
+    font-weight: bold;
+    color: #16a34a;
+    margin-bottom: 20px;
+  }
+
+  .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #16a34a;
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+
+  h2 {
+    color: #222;
+    margin: 10px 0 20px;
+  }
+
+  p {
+    line-height: 1.6;
+    font-size: 15px;
+    text-align: left;
+  }
+
+  .highlight {
+    font-weight: bold;
+    color: #16a34a;
+  }
+
+  .amount {
+    display: inline-block;
+    margin: 20px 0;
+    padding: 14px 28px;
+    background: #f0fdf4;
+    color: #16a34a;
+    font-size: 26px;
+    font-weight: bold;
+    border-radius: 6px;
+  }
+
+  .details {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f9fafb;
+    border-radius: 6px;
+    text-align: left;
+  }
+
+  .details p {
+    margin: 8px 0;
+  }
+
+  .footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+  }
+</style>
+
+
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="logo"> Daan</div>
+
+
+  <div class="icon">&#10003;</div>
+
+  <h2>Donation Completed Successfully</h2>
+
+  <p>
+    Hello <%= name %>,
+  </p>
+
+  <p>
+    Thank you for making a meaningful contribution through
+    <span class="highlight">Daan - Donate With Trust</span>.
+  </p>
+
+  <p>
+    Your donation has been successfully completed and recorded in our
+    system.
+  </p>
+
+  <div class="amount">
+    <%= amount %>
+  </div>
+
+  <div class="details">
+    <p>
+      <strong>Donation ID:</strong>
+      <%= donationId %>
+    </p>
+
+    <p>
+      <strong>Request:</strong>
+      <%= requestTitle %>
+    </p>
+
+    <p>
+      <strong>Status:</strong>
+      <span class="highlight">COMPLETED</span>
+    </p>
+  </div>
+
+  <p>
+    Your support can make a real difference in someone's life. Thank you
+    for choosing to donate with trust.
+  </p>
+
+  <div class="footer">
+    Daan - Donate With Trust<br />
+    Connecting hearts through trusted giving.
+  </div>
+</div>
+
+
+  </body>
+</html>

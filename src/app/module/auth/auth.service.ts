@@ -2,9 +2,9 @@ import crypto from "node:crypto";
 import path from "node:path";
 import bcrypt from "bcryptjs";
 import ejs from "ejs";
+import type { TokenPayload } from "google-auth-library";
 import httpStatus from "http-status";
 import type { JwtPayload, SignOptions } from "jsonwebtoken";
-import { googleClient } from "../../lib/googleAuth";
 import {
 	AuthProvider,
 	Role,
@@ -12,7 +12,9 @@ import {
 } from "../../../generated/prisma/enums";
 
 import config from "../../config";
+import { googleClient } from "../../lib/googleAuth";
 import { transporter } from "../../lib/nodemailer";
+import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../lib/redis";
 import { AppError } from "../../utils/AppError";
 import { jwtUtils } from "../../utils/jwt";
@@ -25,8 +27,6 @@ import type {
 	IResetPasswordPayload,
 	IVerifyEmailPayload,
 } from "./auth.interface";
-import { prisma } from "../../lib/prisma";
-import { TokenPayload } from "google-auth-library";
 
 const registerUser = async (payload: IRegisterUserPayload) => {
 	const {
@@ -492,7 +492,7 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
 
 	const templatePath = path.join(
 		process.cwd(),
-		"src/app/templates/reset-password-success.ejs",
+		"src/app/templates/password-reset-success.ejs",
 	);
 
 	const templateData = {
@@ -661,7 +661,7 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 			// Welcome email
 			const templatePath = path.join(
 				process.cwd(),
-				"src/app/templates/needy-welcome-email.ejs",
+				"src/app/templates/welcome.ejs",
 			);
 
 			const templateData = {

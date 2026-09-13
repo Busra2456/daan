@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Donation Request Rejected - Daan</title>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f7f5; font-family: Arial, Helvetica, sans-serif; color: #333333;">
+  <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);">
+
+    <!-- Header -->
+    <div style="background-color: #166534; padding: 25px; text-align: center;">
+      <h1 style="margin: 0; color: #ffffff; font-size: 28px;">
+         Daan
+      </h1>
+      <p style="margin: 8px 0 0; color: #dcfce7; font-size: 14px;">
+        Donate With Trust
+      </p>
+    </div>
+
+    <!-- Content -->
+    <div style="padding: 35px 30px;">
+
+      <div style="text-align: center; margin-bottom: 25px;">
+        <div style="font-size: 50px;"></div>
+
+        <h2 style="margin: 10px 0; color: #b91c1c;">
+          Donation Request Rejected
+        </h2>
+
+        <p style="margin: 0; color: #666666; font-size: 15px;">
+          Your donation request could not be approved at this time.
+        </p>
+      </div>
+
+      <p style="font-size: 16px; line-height: 1.6;">
+        Hello <strong><%= name %></strong>,
+      </p>
+
+      <p style="font-size: 15px; line-height: 1.6; color: #555555;">
+        We have reviewed your donation request on <strong>Daan</strong>.
+        Unfortunately, your request has been rejected by our administration team.
+      </p>
+
+      <!-- Request Details -->
+      <div style="background-color: #f9fafb; border-left: 4px solid #b91c1c; padding: 18px; margin: 25px 0; border-radius: 6px;">
+        <p style="margin: 0 0 10px; font-size: 14px; color: #666666;">
+          <strong>Request Title:</strong>
+          <%= requestTitle %>
+        </p>
+
+        <p style="margin: 0 0 10px; font-size: 14px; color: #666666;">
+          <strong>Request ID:</strong>
+          <%= requestId %>
+        </p>
+
+        <p style="margin: 0; font-size: 14px; color: #666666;">
+          <strong>Status:</strong>
+          <span style="color: #b91c1c; font-weight: bold;">
+            REJECTED
+          </span>
+        </p>
+      </div>
+
+      <!-- Rejection Reason -->
+      <div style="background-color: #fef2f2; padding: 18px; border-radius: 8px; margin: 25px 0;">
+        <h3 style="margin: 0 0 10px; color: #991b1b; font-size: 16px;">
+          Rejection Reason
+        </h3>
+
+        <p style="margin: 0; color: #555555; font-size: 14px; line-height: 1.6;">
+          <%= rejectionReason %>
+        </p>
+      </div>
+
+      <p style="font-size: 15px; line-height: 1.6; color: #555555;">
+        If you believe this decision was made in error or you have additional
+        information that may help verify your situation, you may submit a new
+        request with the necessary details.
+      </p>
+
+      <p style="font-size: 15px; line-height: 1.6; color: #555555;">
+        Thank you for understanding and for being part of the
+        <strong>Daan</strong> community.
+      </p>
+
+      <p style="font-size: 15px; line-height: 1.6;">
+        Best regards,<br />
+        <strong>Daan Team</strong>
+      </p>
+
+    </div>
+
+    
+    <div style="background-color: #f0fdf4; padding: 20px; text-align: center;">
+      <p style="margin: 0; color: #166534; font-size: 13px;">
+        Daan - Donate With Trust
+      </p>
+
+      <p style="margin: 8px 0 0; color: #777777; font-size: 12px;">
+        This is an automated email. Please do not reply directly to this email.
+      </p>
+
