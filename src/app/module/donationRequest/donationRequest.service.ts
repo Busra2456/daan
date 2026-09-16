@@ -1,0 +1,121 @@
+import httpStatus from "http-status";
+
+import { prisma } from "../../lib/prisma";
+import { AppError } from "../../utils/AppError";
+import type { IRequestUser } from "../auth/auth.interface";
+import type { ICreateDonationRequestPayload } from "./donationRequest.interface";
+
+const createDonationRequest = async (
+	payload: ICreateDonationRequestPayload,
+	user: IRequestUser,
+) => {
+	// Check whether the authenticated user exists
+	const needyUser = await prisma.user.findUnique({
+		where: {
+			id: user.userId,
+		},
+	});
+
+	if (!needyUser) {
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
+	}
+
+	// Only NEEDY users can create donation requests
+	if (needyUser.role !== "NEEDY") {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Only needy users can create donation requests",
+		);
+	}
+
+	// Check blocked or deleted user
+	if (
+		needyUser.isDeleted ||
+		needyUser.status === "DELETED" ||
+		needyUser.status === "BLOCKED"
+	) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Your account is not allowed to create donation requests",
+		);
+	}
+
+	// Create donation request
+	const donationRequest = await prisma.donationRequest.create({
+		data: {
+			title: payload.title,
+			description: payload.description,
+			requiredAmount: payload.requiredAmount,
+			situationVideo: payload.situationVideo,
+			situationAudio: payload.situationAudio,
+
+			// The authenticated NEEDY user's ID
+			needyId: user.userId,
+		},
+	});
+
+	return donationRequest;
+};
+
+const getDonationRequestById = async (
+	requestId: string,
+	user: IRequestUser,
+) => {
+	const donationRequest = await prisma.donationRequest.findUnique({
+		where: {
+			id: requestId,
+		},
+		include: {
+			needy: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					phone: true,
+					address: true,
+					imageUrl: true,
+				},
+			},
+		},
+	});
+
+	if (!donationRequest) {
+		throw new AppError(httpStatus.NOT_FOUND, "Donation request not found");
+	}
+
+	if (user.role === "ADMIN") {
+		return donationRequest;
+	}
+
+	if (user.role === "DONOR") {
+		if (donationRequest.status !== "VERIFIED") {
+			throw new AppError(
+				httpStatus.FORBIDDEN,
+				"Only verified donation requests can be viewed by donors",
+			);
+		}
+
+		return donationRequest;
+	}
+
+	if (user.role === "NEEDY") {
+		if (donationRequest.needyId !== user.userId) {
+			throw new AppError(
+				httpStatus.FORBIDDEN,
+				"You can only view your own donation requests",
+			);
+		}
+
+		return donationRequest;
+	}
+
+	throw new AppError(
+		httpStatus.FORBIDDEN,
+		"You don't have permission to view this donation request",
+	);
+};
+
+export const DonationRequestService = {
+	createDonationRequest,
+	getDonationRequestById,
+};

@@ -30,10 +30,8 @@ const UserRegistrationZodSchema = z.object({
 const EmailVerifyZodSchema = z.object({
 	email: z.email("Invalid email"),
 
-	otp: z
-		.string()
-		.length(6, "OTP must be 6 digits")
-		.regex(/^\d+$/, "OTP must contain only numbers"),
+	otp: z.string().length(6, "OTP must be 6 digits"),
+	// .regex(/^\d+$/, "OTP must contain only numbers"),
 });
 
 const LoginZodSchema = z.object({
