@@ -3,7 +3,10 @@ import httpStatus from "http-status";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
 import type { IRequestUser } from "../auth/auth.interface";
-import type { ICreateDonationRequestPayload } from "./donationRequest.interface";
+import type {
+	ICreateDonationRequestPayload,
+	IUpdateDonationRequestPayload,
+} from "./donationRequest.interface";
 
 const createDonationRequest = async (
 	payload: ICreateDonationRequestPayload,
@@ -115,7 +118,47 @@ const getDonationRequestById = async (
 	);
 };
 
+const updateDonationRequest = async (
+	requestId: string,
+	payload: IUpdateDonationRequestPayload,
+	user: IRequestUser,
+) => {
+	const donationRequest = await prisma.donationRequest.findUnique({
+		where: {
+			id: requestId,
+		},
+	});
+
+	if (!donationRequest) {
+		throw new AppError(httpStatus.NOT_FOUND, "Donation request not found");
+	}
+
+	if (donationRequest.needyId !== user.userId) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"You can only update your own donation requests",
+		);
+	}
+
+	if (donationRequest.status !== "PENDING") {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Only pending donation requests can be updated",
+		);
+	}
+
+	const updatedDonationRequest = await prisma.donationRequest.update({
+		where: {
+			id: requestId,
+		},
+		data: payload,
+	});
+
+	return updatedDonationRequest;
+};
+
 export const DonationRequestService = {
 	createDonationRequest,
 	getDonationRequestById,
+	updateDonationRequest
 };

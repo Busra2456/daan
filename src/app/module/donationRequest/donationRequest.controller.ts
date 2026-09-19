@@ -54,7 +54,25 @@ const getDonationRequestById = catchAsync(
 	},
 );
 
+const updateDonationRequest = catchAsync(
+	async (req: Request, res: Response) => {
+		const result = await DonationRequestService.updateDonationRequest(
+			req.params.requestId as string,
+			req.body,
+			req.user!,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Donation request updated successfully",
+			data: result,
+		});
+	},
+);
+
 export const DonationRequestController = {
 	createDonationRequest,
 	getDonationRequestById,
+	updateDonationRequest
 };
