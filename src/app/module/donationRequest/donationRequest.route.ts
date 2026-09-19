@@ -18,4 +18,16 @@ router.get(
 	DonationRequestController.getDonationRequestById,
 );
 
+router.patch(
+	"/:requestId",
+	auth(Role.NEEDY),
+	DonationRequestController.updateDonationRequest,
+);
+
+router.delete(
+	"/:requestId",
+	auth(Role.NEEDY),
+	DonationRequestController.deleteDonationRequest,
+);
+
 export const DonationRequestRoutes = router;

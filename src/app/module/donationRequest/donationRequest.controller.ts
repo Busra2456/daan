@@ -70,9 +70,25 @@ const updateDonationRequest = catchAsync(
 		});
 	},
 );
+const deleteDonationRequest = catchAsync(
+	async (req: Request, res: Response) => {
+		await DonationRequestService.deleteDonationRequest(
+			req.params.requestId as string,
+			req.user!,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Donation request deleted successfully",
+			data: null,
+		});
+	},
+);
 
 export const DonationRequestController = {
 	createDonationRequest,
 	getDonationRequestById,
-	updateDonationRequest
+	updateDonationRequest,
+	deleteDonationRequest
 };

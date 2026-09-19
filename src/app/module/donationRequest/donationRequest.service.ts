@@ -157,8 +157,46 @@ const updateDonationRequest = async (
 	return updatedDonationRequest;
 };
 
+const deleteDonationRequest = async (
+	requestId: string,
+	user: IRequestUser,
+) => {
+	const donationRequest = await prisma.donationRequest.findUnique({
+		where: {
+			id: requestId,
+		},
+	});
+
+	if (!donationRequest) {
+		throw new AppError(httpStatus.NOT_FOUND, "Donation request not found");
+	}
+
+	if (donationRequest.needyId !== user.userId) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"You can only delete your own donation requests",
+		);
+	}
+
+	if (donationRequest.status !== "PENDING") {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Only pending donation requests can be deleted",
+		);
+	}
+
+	await prisma.donationRequest.delete({
+		where: {
+			id: requestId,
+		},
+	});
+
+	return null;
+};
+
 export const DonationRequestService = {
 	createDonationRequest,
 	getDonationRequestById,
-	updateDonationRequest
+	updateDonationRequest,
+	deleteDonationRequest
 };
