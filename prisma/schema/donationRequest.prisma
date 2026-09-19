@@ -18,10 +18,10 @@ model DonationRequest {
   reviewedById String?
   reviewedBy   User?   @relation("ReviewedRequests", fields: [reviewedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  donations Donation[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  donations     Donation[]
+  conversations Conversation[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@index([needyId], name: "idx_donation_request_needyId")
   @@index([status], name: "idx_donation_request_status")

@@ -82,6 +82,61 @@ const createDonation = async (
 	return donation;
 };
 
+const getMyDonations = async (user: IRequestUser) => {
+	const donorUser = await prisma.user.findUnique({
+		where: {
+			id: user.userId,
+		},
+	});
+
+	if (!donorUser) {
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
+	}
+
+	if (donorUser.role !== "DONOR") {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Only donors can view donation history",
+		);
+	}
+
+	if (
+		donorUser.isDeleted ||
+		donorUser.status === "DELETED" ||
+		donorUser.status === "BLOCKED"
+	) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Your account is not allowed to view donation history",
+		);
+	}
+
+	const donations = await prisma.donation.findMany({
+		where: {
+			donorId: user.userId,
+		},
+		include: {
+			request: {
+				select: {
+					id: true,
+					title: true,
+					description: true,
+					requiredAmount: true,
+					status: true,
+					situationVideo: true,
+					situationAudio: true,
+				},
+			},
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+	});
+
+	return donations;
+};
+
 export const DonationService = {
 	createDonation,
+	getMyDonations,
 };

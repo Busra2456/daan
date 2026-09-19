@@ -7,6 +7,7 @@ import { AuthRoutes } from "./app/module/auth/auth.route";
 import { DonationRoutes } from "./app/module/donation/donation.route";
 import { DonationRequestRoutes } from "./app/module/donationRequest/donationRequest.route";
 import { DonorRoutes } from "./app/module/donor/donor.route";
+import { CommunicationRoutes } from "./app/module/communication/communication.route";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/donation-requests", DonationRequestRoutes);
 app.use("/api/admin", AdminRoutes);
 app.use("/api/donor", DonorRoutes);
 app.use("/api/donations", DonationRoutes);
+app.use("/api/communication", CommunicationRoutes);
 app.use(globalErrorHandler);
 
 export default app;

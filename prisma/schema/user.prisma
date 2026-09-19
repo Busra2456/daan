@@ -6,7 +6,7 @@ model User {
   imageUrl String?
   phone    String?
   address  String?
-  googleId      String?      @unique
+  googleId String? @unique
 
   role          Role         @default(NEEDY)
   status        UserStatus   @default(ACTIVE)
@@ -29,7 +29,10 @@ model User {
   reviewedRequests DonationRequest[] @relation("ReviewedRequests")
 
   // Donation relation
-  donations Donation[] @relation("DonorDonations")
+  donations          Donation[]     @relation("DonorDonations")
+  donorConversations Conversation[] @relation("DonorConversations")
+  needyConversations Conversation[] @relation("NeedyConversations")
+  sentMessages       Message[]      @relation("SentMessages")
 
   @@index([email], name: "idx_user_email")
   @@index([role], name: "idx_user_role")
