@@ -7,6 +7,47 @@ import { UserValidation } from "./auth.validation";
 
 const router = Router();
 
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *               - role
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Hasna Hena
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: Password123
+ *               role:
+ *                 type: string
+ *                 enum: [NEEDY, DONOR]
+ *                 example: DONOR
+ *     responses:
+ *       201:
+ *         description: Registration successful
+ *       400:
+ *         description: Validation error
+ *       409:
+ *         description: User already exists
+ */
 router.post(
 	"/register",
 	validateRequest(UserValidation.UserRegistrationZodSchema),

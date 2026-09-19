@@ -4,10 +4,7 @@ import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
 import type { IRequestUser } from "../auth/auth.interface";
 
-const createConversation = async (
-	requestId: string,
-	user: IRequestUser,
-) => {
+const createConversation = async (requestId: string, user: IRequestUser) => {
 	const donorUser = await prisma.user.findUnique({
 		where: {
 			id: user.userId,
@@ -43,10 +40,7 @@ const createConversation = async (
 	});
 
 	if (!donationRequest) {
-		throw new AppError(
-			httpStatus.NOT_FOUND,
-			"Donation request not found",
-		);
+		throw new AppError(httpStatus.NOT_FOUND, "Donation request not found");
 	}
 
 	if (donationRequest.status !== "VERIFIED") {
@@ -124,10 +118,7 @@ const sendMessage = async (
 	});
 
 	if (!conversation) {
-		throw new AppError(
-			httpStatus.NOT_FOUND,
-			"Conversation not found",
-		);
+		throw new AppError(httpStatus.NOT_FOUND, "Conversation not found");
 	}
 
 	if (
@@ -143,10 +134,7 @@ const sendMessage = async (
 	const trimmedMessage = payload.message.trim();
 
 	if (!trimmedMessage) {
-		throw new AppError(
-			httpStatus.BAD_REQUEST,
-			"Message cannot be empty",
-		);
+		throw new AppError(httpStatus.BAD_REQUEST, "Message cannot be empty");
 	}
 
 	const newMessage = await prisma.message.create({
@@ -171,10 +159,7 @@ const getConversationMessages = async (
 	});
 
 	if (!conversation) {
-		throw new AppError(
-			httpStatus.NOT_FOUND,
-			"Conversation not found",
-		);
+		throw new AppError(httpStatus.NOT_FOUND, "Conversation not found");
 	}
 
 	if (
@@ -211,6 +196,6 @@ const getConversationMessages = async (
 
 export const CommunicationService = {
 	createConversation,
-      sendMessage,
-      getConversationMessages
+	sendMessage,
+	getConversationMessages,
 };

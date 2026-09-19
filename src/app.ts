@@ -1,13 +1,16 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./app/docs/swagger";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { AdminRoutes } from "./app/module/admin/admin.route";
 import { AuthRoutes } from "./app/module/auth/auth.route";
+import { CommunicationRoutes } from "./app/module/communication/communication.route";
 import { DonationRoutes } from "./app/module/donation/donation.route";
 import { DonationRequestRoutes } from "./app/module/donationRequest/donationRequest.route";
 import { DonorRoutes } from "./app/module/donor/donor.route";
-import { CommunicationRoutes } from "./app/module/communication/communication.route";
+import { PaymentRoutes } from "./app/module/payment/payment.route";
 
 const app = express();
 
@@ -22,12 +25,15 @@ app.get("/", (_req, res) => {
 	});
 });
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.use("/api/auth", AuthRoutes);
 app.use("/api/donation-requests", DonationRequestRoutes);
 app.use("/api/admin", AdminRoutes);
 app.use("/api/donor", DonorRoutes);
 app.use("/api/donations", DonationRoutes);
 app.use("/api/communication", CommunicationRoutes);
+app.use("/api/payments", PaymentRoutes);
 app.use(globalErrorHandler);
 
 export default app;

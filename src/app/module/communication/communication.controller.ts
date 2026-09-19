@@ -7,41 +7,34 @@ import { sendResponse } from "../../utils/sendResponse";
 import type { IRequestUser } from "../auth/auth.interface";
 import { CommunicationService } from "./communication.service";
 
-const createConversation = catchAsync(
-	async (req: Request, res: Response) => {
-		const user = req.user as unknown as IRequestUser;
+const createConversation = catchAsync(async (req: Request, res: Response) => {
+	const user = req.user as unknown as IRequestUser;
 
-		const result = await CommunicationService.createConversation(
-			req.params.requestId as string,
-			user,
-		);
+	const result = await CommunicationService.createConversation(
+		req.params.requestId as string,
+		user,
+	);
 
-		sendResponse(res, {
-			statusCode: httpStatus.CREATED,
-			success: true,
-			message: "Conversation created successfully",
-			data: result,
-		});
-	},
-);
+	sendResponse(res, {
+		statusCode: httpStatus.CREATED,
+		success: true,
+		message: "Conversation created successfully",
+		data: result,
+	});
+});
 
-const sendMessage = catchAsync(
-	async (req: Request, res: Response) => {
-		const user = req.user as unknown as IRequestUser;
+const sendMessage = catchAsync(async (req: Request, res: Response) => {
+	const user = req.user as unknown as IRequestUser;
 
-		const result = await CommunicationService.sendMessage(
-			req.body,
-			user,
-		);
+	const result = await CommunicationService.sendMessage(req.body, user);
 
-		sendResponse(res, {
-			statusCode: httpStatus.CREATED,
-			success: true,
-			message: "Message sent successfully",
-			data: result,
-		});
-	},
-);
+	sendResponse(res, {
+		statusCode: httpStatus.CREATED,
+		success: true,
+		message: "Message sent successfully",
+		data: result,
+	});
+});
 
 const getConversationMessages = catchAsync(
 	async (req: Request, res: Response) => {
@@ -63,6 +56,6 @@ const getConversationMessages = catchAsync(
 
 export const CommunicationController = {
 	createConversation,
-      sendMessage,
-      getConversationMessages
+	sendMessage,
+	getConversationMessages,
 };
