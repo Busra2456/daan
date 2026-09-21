@@ -1217,6 +1217,7 @@ var verifyEmail = async (payload) => {
   const { otp } = payload;
   const email = payload.email.trim().toLowerCase();
   const otpKey = `daan-registration-otp:${email}`;
+  await connectRedis();
   const redisOtp = await redisClient.get(otpKey);
   if (!redisOtp) {
     throw new AppError(httpStatus6.BAD_REQUEST, "Invalid or expired OTP");
@@ -1420,6 +1421,7 @@ var forgotPassword = async (payload) => {
   const otpValue = crypto.randomInt(1e5, 1e6).toString();
   const expirationSeconds = 5 * 60;
   const otpKey = `daan-forgot-password-otp:${email}`;
+  await connectRedis();
   await redisClient.set(otpKey, otpValue, {
     expiration: {
       type: "EX",
