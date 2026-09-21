@@ -132,6 +132,8 @@ const verifyEmail = async (payload: IVerifyEmailPayload) => {
 
 	const otpKey = `daan-registration-otp:${email}`;
 
+	await connectRedis();
+
 	const redisOtp = await redisClient.get(otpKey);
 
 	if (!redisOtp) {
