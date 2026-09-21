@@ -15,7 +15,7 @@ import config from "../../config/index.js";
 import { googleClient } from "../../lib/googleAuth.js";
 import { transporter } from "../../lib/nodemailer.js";
 import { prisma } from "../../lib/prisma.js";
-import { redisClient } from "../../lib/redis.js";
+import { connectRedis, redisClient } from "../../lib/redis.js";
 import { AppError } from "../../utils/AppError.js";
 import { jwtUtils } from "../../utils/jwt.js";
 import type {
@@ -76,7 +76,7 @@ const registerUser = async (payload: IRegisterUserPayload) => {
 	const otpValue = crypto.randomInt(100000, 1000000).toString();
 
 	const otpKey = `daan-registration-otp:${normalizedEmail}`;
-
+      await connectRedis();
 	await redisClient.set(otpKey, otpValue, {
 		expiration: {
 			type: "EX",
