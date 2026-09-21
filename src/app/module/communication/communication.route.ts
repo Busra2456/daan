@@ -1,7 +1,7 @@
 import { Router } from "express";
 
-import { auth } from "../../middleware/checkAuth";
-import { CommunicationController } from "./communication.controller";
+import { auth } from "../../middleware/checkAuth.js";
+import { CommunicationController } from "./communication.controller.js";
 
 const router = Router();
 

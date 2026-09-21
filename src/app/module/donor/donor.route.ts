@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { auth } from "../../middleware/checkAuth";
-import { DonorController } from "./donor.controller";
+import { auth } from "../../middleware/checkAuth.js";
+import { DonorController } from "./donor.controller.js";
 
 const router = Router();
 

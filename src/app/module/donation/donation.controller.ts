@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
 import httpStatus from "http-status";
 
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
 
-import type { IRequestUser } from "../auth/auth.interface";
-import { DonationService } from "./donation.service";
+import type { IRequestUser } from "../auth/auth.interface.js";
+import { DonationService } from "./donation.service.js";
 
 const createDonation = catchAsync(async (req: Request, res: Response) => {
 	const user = req.user as unknown as IRequestUser;

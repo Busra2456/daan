@@ -1,7 +1,7 @@
 import { Router } from "express";
 
-import { auth } from "../../middleware/checkAuth";
-import { DonationController } from "./donation.controller";
+import { auth } from "../../middleware/checkAuth.js";
+import { DonationController } from "./donation.controller.js";
 
 const router = Router();
 

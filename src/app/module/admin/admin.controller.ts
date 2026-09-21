@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
 import httpStatus from "http-status";
 
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
 
-import type { IRequestUser } from "../auth/auth.interface";
-import { AdminService } from "./admin.service";
+import type { IRequestUser } from "../auth/auth.interface.js";
+import { AdminService } from "./admin.service.js";
 
 const getPendingDonationRequests = catchAsync(
 	async (req: Request, res: Response) => {

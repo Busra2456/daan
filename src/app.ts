@@ -2,15 +2,15 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
-import { swaggerSpec } from "./app/docs/swagger";
-import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
-import { AdminRoutes } from "./app/module/admin/admin.route";
-import { AuthRoutes } from "./app/module/auth/auth.route";
-import { CommunicationRoutes } from "./app/module/communication/communication.route";
-import { DonationRoutes } from "./app/module/donation/donation.route";
-import { DonationRequestRoutes } from "./app/module/donationRequest/donationRequest.route";
-import { DonorRoutes } from "./app/module/donor/donor.route";
-import { PaymentRoutes } from "./app/module/payment/payment.route";
+import { swaggerSpec } from "./app/docs/swagger.js";
+import { globalErrorHandler } from "./app/middleware/globalErrorHandler.js";
+import { AdminRoutes } from "./app/module/admin/admin.route.js";
+import { AuthRoutes } from "./app/module/auth/auth.route.js";
+import { CommunicationRoutes } from "./app/module/communication/communication.route.js";
+import { DonationRoutes } from "./app/module/donation/donation.route.js";
+import { DonationRequestRoutes } from "./app/module/donationRequest/donationRequest.route.js";
+import { DonorRoutes } from "./app/module/donor/donor.route.js";
+import { PaymentRoutes } from "./app/module/payment/payment.route.js";
 
 const app = express();
 

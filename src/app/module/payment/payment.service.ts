@@ -1,10 +1,10 @@
 import httpStatus from "http-status";
 
-import config from "../../config";
-import { getBkashIdToken } from "../../lib/bkash";
-import { prisma } from "../../lib/prisma";
-import { AppError } from "../../utils/AppError";
-import type { IRequestUser } from "../auth/auth.interface";
+import config from "../../config/index.js";
+import { getBkashIdToken } from "../../lib/bkash.js";
+import { prisma } from "../../lib/prisma.js";
+import { AppError } from "../../utils/AppError.js";
+import type { IRequestUser } from "../auth/auth.interface.js";
 
 const createPayment = async (donationId: string, user: IRequestUser) => {
 	const donation = await prisma.donation.findUnique({

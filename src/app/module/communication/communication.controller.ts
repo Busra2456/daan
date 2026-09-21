@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
 import httpStatus from "http-status";
 
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
 
-import type { IRequestUser } from "../auth/auth.interface";
-import { CommunicationService } from "./communication.service";
+import type { IRequestUser } from "../auth/auth.interface.js";
+import { CommunicationService } from "./communication.service.js";
 
 const createConversation = catchAsync(async (req: Request, res: Response) => {
 	const user = req.user as unknown as IRequestUser;

@@ -9,15 +9,15 @@ import {
 	AuthProvider,
 	Role,
 	UserStatus,
-} from "../../../generated/prisma/enums";
+} from "../../../generated/prisma/enums.js";
 
-import config from "../../config";
-import { googleClient } from "../../lib/googleAuth";
-import { transporter } from "../../lib/nodemailer";
-import { prisma } from "../../lib/prisma";
-import { redisClient } from "../../lib/redis";
-import { AppError } from "../../utils/AppError";
-import { jwtUtils } from "../../utils/jwt";
+import config from "../../config/index.js";
+import { googleClient } from "../../lib/googleAuth.js";
+import { transporter } from "../../lib/nodemailer.js";
+import { prisma } from "../../lib/prisma.js";
+import { redisClient } from "../../lib/redis.js";
+import { AppError } from "../../utils/AppError.js";
+import { jwtUtils } from "../../utils/jwt.js";
 import type {
 	IForgotPasswordPayload,
 	IGoogleLoginPayload,

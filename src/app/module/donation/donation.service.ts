@@ -1,8 +1,8 @@
 import httpStatus from "http-status";
 
-import { prisma } from "../../lib/prisma";
-import { AppError } from "../../utils/AppError";
-import type { IRequestUser } from "../auth/auth.interface";
+import { prisma } from "../../lib/prisma.js";
+import { AppError } from "../../utils/AppError.js";
+import type { IRequestUser } from "../auth/auth.interface.js";
 
 interface ICreateDonationPayload {
 	amount: number;

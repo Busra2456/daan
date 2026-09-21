@@ -1,4 +1,4 @@
-import type { DonationRequestStatus } from "../../../../prisma/src/generated/prisma/enums";
+import type { DonationRequestStatus } from "../../../../prisma/src/generated/prisma/enums.js";
 
 export interface ICreateDonationRequestPayload {
 	title: string;

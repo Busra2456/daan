@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
 import httpStatus from "http-status";
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
-import type { IRequestUser } from "../auth/auth.interface";
-import { PaymentService } from "./payment.service";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
+import type { IRequestUser } from "../auth/auth.interface.js";
+import { PaymentService } from "./payment.service.js";
 
 const createPayment = catchAsync(async (req: Request, res: Response) => {
 	const user = req.user as unknown as IRequestUser;

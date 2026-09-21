@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
 import httpStatus from "http-status";
 
-import { AppError } from "../../utils/AppError";
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
+import { AppError } from "../../utils/AppError.js";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
 
-import type { IRequestUser } from "../auth/auth.interface";
-import { DonationRequestService } from "./donationRequest.service";
-import { DonationRequestValidation } from "./donationRequest.validation";
+import type { IRequestUser } from "../auth/auth.interface.js";
+import { DonationRequestService } from "./donationRequest.service.js";
+import { DonationRequestValidation } from "./donationRequest.validation.js";
 
 const createDonationRequest = catchAsync(
 	async (req: Request, res: Response) => {

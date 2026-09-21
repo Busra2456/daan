@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
 import httpStatus from "http-status";
 
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
 
-import type { IRequestUser } from "../auth/auth.interface";
-import { DonorService } from "./donor.service";
+import type { IRequestUser } from "../auth/auth.interface.js";
+import { DonorService } from "./donor.service.js";
 
 const getVerifiedDonationRequests = catchAsync(
 	async (req: Request, res: Response) => {

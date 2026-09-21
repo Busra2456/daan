@@ -1,10 +1,9 @@
 import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
-import { Role } from "../../../prisma/src/generated/prisma/enums";
-import config from "../config";
-import { prisma } from "../lib/prisma";
-import { AppError } from "./AppError";
-
+import { Role } from "../../../prisma/src/generated/prisma/enums.js";
+import config from "../config/index.js";
+import { prisma } from "../lib/prisma.js";
+import { AppError } from "./AppError.js";
 export const seedAdmin = async () => {
 	try {
 		const existingAdmin = await prisma.user.findUnique({
