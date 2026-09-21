@@ -669,43 +669,6 @@ var UserStatus = {
 globalThis["__dirname"] = path.dirname(fileURLToPath(import.meta.url));
 var PrismaClient = getPrismaClientClass();
 
-// src/app/config/index.ts
-import path2 from "path";
-import dotenv from "dotenv";
-dotenv.config({ path: path2.join(process.cwd(), ".env") });
-var config_default = {
-  port: process.env.PORT,
-  database_url: process.env.DATABASE_URL,
-  node_env: process.env.NODE_ENV,
-  bak_url: process.env.APP_URL,
-  frontend_url: process.env.FRONTEND_URL,
-  bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
-  jwt_access_secret: process.env.JWT_ACCESS_SECRET,
-  jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
-  jwt_access_expires_in: process.env.JWT_ACCESS_EXPIRES_IN,
-  jwt_refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
-  google_client_id: process.env.GOOGLE_CLIENT_ID,
-  admin_name: process.env.ADMIN_NAME,
-  admin_email: process.env.ADMIN_EMAIL,
-  admin_password: process.env.ADMIN_PASSWORD,
-  redis_user: process.env.REDIS_USER,
-  redis_password: process.env.REDIS_PASSWORD,
-  redis_host: process.env.REDIS_HOST,
-  redis_port: process.env.REDIS_PORT,
-  smtp_user: process.env.SMTP_USER,
-  smtp_password: process.env.SMTP_PASSWORD,
-  email_sender: process.env.EMAIL_SENDER,
-  cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  cloudinary_api_key: process.env.CLOUDINARY_API_KEY,
-  cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET,
-  bkash_base_url: process.env.BKASH_BASE_URL,
-  bkash_username: process.env.BKASH_USERNAME,
-  bkash_password: process.env.BKASH_PASSWORD,
-  bkash_app_key: process.env.BKASH_APP_KEY,
-  bkash_app_secret: process.env.BKASH_APP_SECRET,
-  bkash_callback_url: process.env.BKASH_CALLBACK_URL
-};
-
 // src/app/utils/AppError.ts
 var AppError = class extends Error {
   statusCode;
@@ -722,9 +685,7 @@ var AppError = class extends Error {
 
 // src/app/middleware/globalErrorHandler.ts
 var globalErrorHandler = async (err, _req, res, _next) => {
-  if (config_default.node_env === "development") {
-    console.log("Error from Global Error Handler:", err);
-  }
+  console.log("Error from Global Error Handler:", err);
   let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
   let errorMessage = "Internal Server Error";
   const errors = [];
@@ -771,6 +732,43 @@ import { Router } from "express";
 
 // src/app/middleware/checkAuth.ts
 import httpStatus2 from "http-status";
+
+// src/app/config/index.ts
+import path2 from "path";
+import dotenv from "dotenv";
+dotenv.config({ path: path2.join(process.cwd(), ".env") });
+var config_default = {
+  port: process.env.PORT,
+  database_url: process.env.DATABASE_URL,
+  node_env: process.env.NODE_ENV,
+  bak_url: process.env.APP_URL,
+  frontend_url: process.env.FRONTEND_URL,
+  bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
+  jwt_access_secret: process.env.JWT_ACCESS_SECRET,
+  jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
+  jwt_access_expires_in: process.env.JWT_ACCESS_EXPIRES_IN,
+  jwt_refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
+  google_client_id: process.env.GOOGLE_CLIENT_ID,
+  admin_name: process.env.ADMIN_NAME,
+  admin_email: process.env.ADMIN_EMAIL,
+  admin_password: process.env.ADMIN_PASSWORD,
+  redis_user: process.env.REDIS_USER,
+  redis_password: process.env.REDIS_PASSWORD,
+  redis_host: process.env.REDIS_HOST,
+  redis_port: process.env.REDIS_PORT,
+  smtp_user: process.env.SMTP_USER,
+  smtp_password: process.env.SMTP_PASSWORD,
+  email_sender: process.env.EMAIL_SENDER,
+  cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  cloudinary_api_key: process.env.CLOUDINARY_API_KEY,
+  cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET,
+  bkash_base_url: process.env.BKASH_BASE_URL,
+  bkash_username: process.env.BKASH_USERNAME,
+  bkash_password: process.env.BKASH_PASSWORD,
+  bkash_app_key: process.env.BKASH_APP_KEY,
+  bkash_app_secret: process.env.BKASH_APP_SECRET,
+  bkash_callback_url: process.env.BKASH_CALLBACK_URL
+};
 
 // src/app/lib/prisma.ts
 import "dotenv/config";
@@ -1129,6 +1127,14 @@ var redisClient = createClient({
     port: Number(config_default.redis_port)
   }
 });
+redisClient.on("error", (error) => {
+  console.error("Redis Client Error:", error);
+});
+var connectRedis = async () => {
+  if (!redisClient.isOpen) {
+    await redisClient.connect();
+  }
+};
 
 // src/app/module/auth/auth.service.ts
 var registerUser = async (payload) => {
@@ -1166,6 +1172,7 @@ var registerUser = async (payload) => {
   const expirationSeconds = 5 * 60;
   const otpValue = crypto.randomInt(1e5, 1e6).toString();
   const otpKey = `daan-registration-otp:${normalizedEmail}`;
+  await connectRedis();
   await redisClient.set(otpKey, otpValue, {
     expiration: {
       type: "EX",
