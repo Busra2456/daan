@@ -1,4 +1,4 @@
-import type { Role } from "../../../../prisma/src/generated/prisma/enums.js";
+import type { Role } from "../../../generated/prisma/enums.js";
 
 export interface ILoginUserPayload {
 	email: string;

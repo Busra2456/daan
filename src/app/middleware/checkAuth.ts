@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
-import type { Role } from "../../../prisma/src/generated/prisma/enums.js";
+import type { Role } from "../../generated/prisma/enums.js";
 import config from "../config/index.js";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../utils/AppError.js";
