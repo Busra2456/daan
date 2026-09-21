@@ -466,6 +466,7 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
 	}
 
 	const otpKey = `daan-forgot-password-otp:${email}`;
+	await connectRedis();
 
 	const redisOtp = await redisClient.get(otpKey);
 
