@@ -26,7 +26,7 @@ import type {
 	IRequestUser,
 	IResetPasswordPayload,
 	IVerifyEmailPayload,
-} from "./auth.interface";
+} from "./auth.interface.js";
 
 const registerUser = async (payload: IRegisterUserPayload) => {
 	const {
