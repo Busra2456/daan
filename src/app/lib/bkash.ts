@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
-import config from "../config";
-import { AppError } from "../utils/AppError";
-import { redisClient } from "./redis";
+import config from "../config/index.js";
+import { AppError } from "../utils/AppError.js";
+import { redisClient } from "./redis.js";
 
 export const getBkashIdToken = async () => {
 	try {

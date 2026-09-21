@@ -2,7 +2,6 @@
 import path from "node:path";
 import dotenv from "dotenv";
 dotenv.config({ path: path.join(process.cwd(), ".env") });
-console.log("JWT ACCESS SECRET:", process.env.JWT_ACCESS_SECRET);
 export default {
     port: process.env.PORT,
     database_url: process.env.DATABASE_URL,

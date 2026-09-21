@@ -40,6 +40,8 @@ export const JsonNull = runtime.JsonNull;
 export const AnyNull = runtime.AnyNull;
 export const ModelName = {
     Admin: "Admin",
+    Conversation: "Conversation",
+    Message: "Message",
     Donation: "Donation",
     DonationRequest: "DonationRequest",
     Donor: "Donor",
@@ -61,6 +63,21 @@ export const AdminScalarFieldEnum = {
     userId: "userId",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
+};
+export const ConversationScalarFieldEnum = {
+    id: "id",
+    requestId: "requestId",
+    donorId: "donorId",
+    needyId: "needyId",
+    createdAt: "createdAt",
+    updatedAt: "updatedAt",
+};
+export const MessageScalarFieldEnum = {
+    id: "id",
+    conversationId: "conversationId",
+    senderId: "senderId",
+    message: "message",
+    createdAt: "createdAt",
 };
 export const DonationScalarFieldEnum = {
     id: "id",
