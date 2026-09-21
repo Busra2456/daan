@@ -76,7 +76,7 @@ const registerUser = async (payload: IRegisterUserPayload) => {
 	const otpValue = crypto.randomInt(100000, 1000000).toString();
 
 	const otpKey = `daan-registration-otp:${normalizedEmail}`;
-      await connectRedis();
+	await connectRedis();
 	await redisClient.set(otpKey, otpValue, {
 		expiration: {
 			type: "EX",
@@ -400,6 +400,8 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
 	const expirationSeconds = 5 * 60;
 
 	const otpKey = `daan-forgot-password-otp:${email}`;
+
+	await connectRedis();
 
 	await redisClient.set(otpKey, otpValue, {
 		expiration: {
