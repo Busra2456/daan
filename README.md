@@ -64,7 +64,8 @@ REJECTED      VERIFIED
 Swagger/OpenAPI documentation is available through:
 
 ```text
-/api-docs
+https://daan-7z6n.vercel.app/api-docs
+
 ```
 
 ## Tech Stack
@@ -146,6 +147,7 @@ npm run dev
 Configure the following categories in `.env` according to your deployment environment:
 
 ```env
+
 DATABASE_URL=
 
 PORT=
@@ -180,27 +182,23 @@ BKASH_CALLBACK_URL=
 
 > Never commit `.env` or real API credentials to GitHub.
 
-## API Base URL
-
-Production:
+## daan backend live URL
 
 ```text
-https://daan-7z6n.vercel.app/api
-```
+https://daan-7z6n.vercel.app/
 
-Health check:
-
-```text
-GET /
 ```
 
 API documentation:
 
 ```text
-GET /api-docs
+https://daan-7z6n.vercel.app/api-docs
 ```
+## Github Link
+```text
+https://github.com/Busra2456/daan
 
-## Main API Routes
+```
 
 ### Authentication
 
@@ -289,6 +287,13 @@ NEEDY
 DONOR
 ADMIN
 ```
+## Demo Admin Credentials
+
+
+Email: daan@gmail.com,
+Password: Daan@123Busra
+
+Role: ADMIN
 
 ## Deployment
 
