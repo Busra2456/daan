@@ -1,7 +1,7 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
-import swaggerUi from "swagger-ui-express";
+// import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./app/docs/swagger.js";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler.js";
 import { AdminRoutes } from "./app/module/admin/admin.route.js";
@@ -26,13 +26,40 @@ app.get("/", (_req, res) => {
 });
 
 
-app.use(
-	"/api-docs",
-	swaggerUi.serve,
-	swaggerUi.setup(swaggerSpec, {
-		explorer: true,
-	}),
-);
+app.get("/api-docs", (_req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Daan API Documentation</title>
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"
+        />
+      </head>
+      <body>
+        <div id="swagger-ui"></div>
+
+        <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+        <script>
+          window.onload = () => {
+            window.ui = SwaggerUIBundle({
+              spec: ${JSON.stringify(swaggerSpec)},
+              dom_id: "#swagger-ui",
+              deepLinking: true,
+              presets: [
+                SwaggerUIBundle.presets.apis,
+              ],
+              layout: "BaseLayout",
+            });
+          };
+        </script>
+      </body>
+    </html>
+  `);
+});
+
+
 app.use("/api/auth", AuthRoutes);
 app.use("/api/donation-requests", DonationRequestRoutes);
 app.use("/api/admin", AdminRoutes);
