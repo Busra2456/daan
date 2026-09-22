@@ -25,8 +25,14 @@ app.get("/", (_req, res) => {
 	});
 });
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.use(
+	"/api-docs",
+	swaggerUi.serve,
+	swaggerUi.setup(swaggerSpec, {
+		explorer: true,
+	}),
+);
 app.use("/api/auth", AuthRoutes);
 app.use("/api/donation-requests", DonationRequestRoutes);
 app.use("/api/admin", AdminRoutes);
