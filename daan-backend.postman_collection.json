@@ -1,578 +1,72 @@
 {
   "info": {
-    "_postman_id": "e50f0932-14f4-496f-8c79-823036685c1c",
-    "name": "Daan Backend API",
-    "description": "Daan - Donate with Trust backend API collection.",
+    "_postman_id": "daan-backend-sanitized",
+    "name": "daan-backend",
+    "description": "Daan — Donate with Trust. Sanitized collection: no real email, password, OTP, JWT or payment secret is included.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:5000"
-    },
-    {
-      "key": "authToken",
-      "value": ""
-    },
-    {
-      "key": "requestId",
-      "value": "YOUR_DONATION_REQUEST_ID"
-    },
-    {
-      "key": "conversationId",
-      "value": "YOUR_CONVERSATION_ID"
-    },
-    {
-      "key": "paymentId",
-      "value": "YOUR_PAYMENT_ID"
-    }
+    {"key":"baseUrl","value":"https://daan-7z6n.vercel.app/api"},
+    {"key":"needy_email","value":""},
+    {"key":"needy_password","value":""},
+    {"key":"donor_email","value":""},
+    {"key":"donor_password","value":""},
+    {"key":"admin_email","value":""},
+    {"key":"admin_password","value":""},
+    {"key":"access_token","value":""},
+    {"key":"refresh_token","value":""},
+    {"key":"verification_otp","value":""},
+    {"key":"reset_otp","value":""},
+    {"key":"google_id_token","value":""},
+    {"key":"request_id","value":""},
+    {"key":"donation_id","value":""},
+    {"key":"conversation_id","value":""},
+    {"key":"payment_id","value":""}
   ],
+  "auth": {"type":"bearer","bearer":[{"key":"token","value":"{{access_token}}","type":"string"}]},
   "item": [
-    {
-      "name": "Authentication",
-      "item": [
-        {
-          "name": "Register - NEEDY",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Needy User\",\n  \"email\": \"needy@example.com\",\n  \"password\": \"YourPassword@123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Register - DONOR",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Donor User\",\n  \"email\": \"donor@example.com\",\n  \"password\": \"YourPassword@123\",\n  \"phone\": \"01800000000\",\n  \"address\": \"Dhaka\",\n  \"role\": \"DONOR\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"your-email@example.com\",\n  \"password\": \"YourPassword@123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "login"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Verify Email",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"your-email@example.com\",\n  \"otp\": \"YOUR_OTP\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/verify-email",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "verify-email"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Me",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/me",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "me"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{authToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Forgot Password",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"your-email@example.com\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/forgot-password",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "forgot-password"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Reset Password",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"your-email@example.com\",\n  \"otp\": \"YOUR_OTP\",\n  \"newPassword\": \"NewPassword@123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/reset-password",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "reset-password"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Refresh Token",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/refresh-token",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "refresh-token"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Admin",
-      "item": [
-        {
-          "name": "Admin Login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"AdminPassword@123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "login"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Pending Donation Requests",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/admin/donation-requests/pending",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "admin",
-                "donation-requests",
-                "pending"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{authToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Verify Donation Request",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/admin/donation-requests/{{requestId}}/verify",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "admin",
-                "donation-requests",
-                "{{requestId}}",
-                "verify"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{authToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Donor",
-      "item": [
-        {
-          "name": "Get Verified Donation Requests",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/donor/donation-requests",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "donor",
-                "donation-requests"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{authToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Donations",
-      "item": [
-        {
-          "name": "Create Donation",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"requestId\": \"{{requestId}}\",\n  \"amount\": 1000\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/donations",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "donations"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{authToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "My Donations",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/donations/my-donations",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "donations",
-                "my-donations"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{authToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Communication",
-      "item": [
-        {
-          "name": "Create Communication Request",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/communication/requests/{{requestId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "communication",
-                "requests",
-                "{{requestId}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{authToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Send Message",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"conversationId\": \"{{conversationId}}\",\n  \"message\": \"Hello, I would like to know more about your situation.\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/communication/messages",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "communication",
-                "messages"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{authToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Conversation Messages",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/communication/conversations/{{conversationId}}/messages",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "communication",
-                "conversations",
-                "{{conversationId}}",
-                "messages"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{authToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Payments",
-      "item": [
-        {
-          "name": "Create Payment",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/payments/{{paymentId}}/create",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "payments",
-                "{{paymentId}}",
-                "create"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{authToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    }
+    {"name":"01 Authentication","item":[
+      {"name":"Register - NEEDY","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"name\": \"Test Needy\",\n  \"email\": \"{{needy_email}}\",\n  \"password\": \"{{needy_password}}\",\n  \"role\": \"NEEDY\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/register"}}},
+      {"name":"Login - NEEDY","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"email\": \"{{needy_email}}\",\n  \"password\": \"{{needy_password}}\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/login"}}},
+      {"name":"Register - DONOR","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"name\": \"Test Donor\",\n  \"email\": \"{{donor_email}}\",\n  \"password\": \"{{donor_password}}\",\n  \"role\": \"DONOR\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/register"}}},
+      {"name":"Login - DONOR","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"email\": \"{{donor_email}}\",\n  \"password\": \"{{donor_password}}\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/login"}}},
+      {"name":"Login - ADMIN","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/login"}}},
+      {"name":"Verify Email","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"email\": \"{{needy_email}}\",\n  \"otp\": \"{{verification_otp}}\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/verify-email"}}},
+      {"name":"Get Me","request":{"method":"GET","header":[],"url":{"raw":"{{baseUrl}}/auth/me"}}},
+      {"name":"Wrong Password","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"email\": \"{{needy_email}}\",\n  \"password\": \"WRONG_PASSWORD_FOR_TEST\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/login"}}},
+      {"name":"No Token","request":{"method":"GET","header":[],"url":{"raw":"{{baseUrl}}/auth/me"},"auth":{"type":"noauth"}}},
+      {"name":"Forgot Password","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"email\": \"{{needy_email}}\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/forgot-password"}}},
+      {"name":"Reset Password","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"email\": \"{{needy_email}}\",\n  \"otp\": \"{{reset_otp}}\",\n  \"newPassword\": \"{{needy_password}}\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/reset-password"}}},
+      {"name":"Google Login","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"idToken\": \"{{google_id_token}}\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/google-login"}}},
+      {"name":"Refresh Token","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"refreshToken\": \"{{refresh_token}}\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/auth/refresh-token"}}}
+    ]},
+    {"name":"02 Donation Requests","item":[
+      {"name":"Create Donation Request","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"title\": \"Education Support Needed\",\n  \"description\": \"I need financial support to continue my education and purchase necessary study materials.\",\n  \"requiredAmount\": 10000\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/donation-requests"}}},
+      {"name":"Get Donation Request","request":{"method":"GET","header":[],"url":{"raw":"{{baseUrl}}/donation-requests/{{request_id}}"}}},
+      {"name":"Update Donation Request","request":{"method":"PATCH","header":[],"body":{"mode":"raw","raw":"{\n  \"title\": \"Updated Donation Request\",\n  \"description\": \"Updated description\",\n  \"requiredAmount\": 12000\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/donation-requests/{{request_id}}"}}},
+      {"name":"Delete Donation Request","request":{"method":"DELETE","header":[],"url":{"raw":"{{baseUrl}}/donation-requests/{{request_id}}"}}}
+    ]},
+    {"name":"03 Admin","item":[
+      {"name":"Pending Donation Requests","request":{"method":"GET","header":[],"url":{"raw":"{{baseUrl}}/admin/donation-requests/pending"}}},
+      {"name":"Verify Donation Request","request":{"method":"PATCH","header":[],"url":{"raw":"{{baseUrl}}/admin/donation-requests/{{request_id}}/verify"}}},
+      {"name":"Reject Donation Request","request":{"method":"PATCH","header":[],"body":{"mode":"raw","raw":"{\n  \"rejectionReason\": \"Insufficient information\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/admin/donation-requests/{{request_id}}/reject"}}}
+    ]},
+    {"name":"04 Donor","item":[
+      {"name":"Verified Donation Requests","request":{"method":"GET","header":[],"url":{"raw":"{{baseUrl}}/donor/donation-requests"}}}
+    ]},
+    {"name":"05 Donations","item":[
+      {"name":"Create Donation","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"amount\": 100,\n  \"requestId\": \"{{request_id}}\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/donations"}}},
+      {"name":"My Donations","request":{"method":"GET","header":[],"url":{"raw":"{{baseUrl}}/donations/my-donations"}}}
+    ]},
+    {"name":"06 Communication","item":[
+      {"name":"Get Request Conversation","request":{"method":"GET","header":[],"url":{"raw":"{{baseUrl}}/communication/requests/{{request_id}}"}}},
+      {"name":"Send Message","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"conversationId\": \"{{conversation_id}}\",\n  \"message\": \"Hello, I would like to know more about your situation.\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/communication/messages"}}},
+      {"name":"Get Conversation Messages","request":{"method":"GET","header":[],"url":{"raw":"{{baseUrl}}/communication/conversations/{{conversation_id}}/messages"}}}
+    ]},
+    {"name":"07 Payments","item":[
+      {"name":"Create bKash Payment","request":{"method":"POST","header":[],"url":{"raw":"{{baseUrl}}/payments/{{donation_id}}/create"}}},
+      {"name":"Execute bKash Payment","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\n  \"paymentID\": \"{{payment_id}}\"\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"{{baseUrl}}/payments/{{donation_id}}/execute"}}},
+      {"name":"bKash Callback","request":{"method":"GET","header":[],"url":{"raw":"{{baseUrl}}/payments/bkash/callback"}}}
+    ]}
   ]
 }
