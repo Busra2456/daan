@@ -12,11 +12,15 @@ const options: swaggerJsdoc.Options = {
 		},
 
 		servers: [
-			{
-				url: "http://localhost:5000",
-				description: "Local development server",
-			},
-		],
+    {
+        url: "https://daan-7z6n.vercel.app",
+        description: "Production server",
+    },
+    {
+        url: "http://localhost:5000",
+        description: "Local development server",
+    },
+],
 
 		tags: [
 			{ name: "Authentication", description: "User authentication APIs" },
