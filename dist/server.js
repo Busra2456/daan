@@ -1473,6 +1473,7 @@ var resetPassword = async (payload) => {
     );
   }
   const otpKey = `daan-forgot-password-otp:${email}`;
+  await connectRedis();
   const redisOtp = await redisClient.get(otpKey);
   if (!redisOtp) {
     throw new AppError(httpStatus6.BAD_REQUEST, "Invalid or expired OTP");
@@ -2650,6 +2651,7 @@ import httpStatus17 from "http-status";
 import httpStatus16 from "http-status";
 var getBkashIdToken = async () => {
   try {
+    await connectRedis();
     const IdTokenKey = "bkash:idToken";
     const RefreshTokenKey = "bkash:refreshToken";
     let bkashIdToken = await redisClient.get(IdTokenKey);
