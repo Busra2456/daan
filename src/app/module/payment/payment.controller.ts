@@ -39,6 +39,8 @@ const executePayment = catchAsync(async (req: Request, res: Response) => {
 });
 
 const bkashCallback = catchAsync(async (req: Request, res: Response) => {
+	  console.log("🔥 NEW BKASH CALLBACK CODE RUNNING");
+
   const { paymentID, status } = req.query;
 
   if (!paymentID) {
