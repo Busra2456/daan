@@ -136,7 +136,75 @@ const getMyDonations = async (user: IRequestUser) => {
 	return donations;
 };
 
+const getReceivedDonations = async (user: IRequestUser) => {
+  const needyUser = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+  });
+
+  if (!needyUser) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  if (needyUser.role !== "NEEDY") {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Only needy users can view received donations",
+    );
+  }
+
+  if (
+    needyUser.isDeleted ||
+    needyUser.status === "DELETED" ||
+    needyUser.status === "BLOCKED"
+  ) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Your account is not allowed to view received donations",
+    );
+  }
+
+  const donations = await prisma.donation.findMany({
+    where: {
+      request: {
+        needyId: user.userId,
+      },
+      status: "COMPLETED",
+    },
+    include: {
+      request: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+      donor: {
+        select: {
+          id: true,
+          name: true,
+          imageUrl: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const totalReceived = donations.reduce(
+    (total, donation) => total + Number(donation.amount),
+    0,
+  );
+
+  return {
+    totalReceived,
+    donations,
+  };
+};
+
 export const DonationService = {
 	createDonation,
 	getMyDonations,
+	getReceivedDonations
 };

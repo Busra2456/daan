@@ -7,6 +7,7 @@ import { sendResponse } from "../../utils/sendResponse.js";
 
 import type { IRequestUser } from "./auth.interface.js";
 import { AuthService } from "./auth.service.js";
+import config from "../../config/index.js";
 
 const registerUser = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
@@ -171,6 +172,56 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 		},
 	});
 });
+const demoLogin = catchAsync(async (req: Request, res: Response) => {
+	const { role } = req.body;
+
+	const result = await AuthService.demoLogin(role);
+
+	const { accessToken, refreshToken, user } = result;
+
+	res.cookie("accessToken", accessToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "lax",
+		maxAge: 1000 * 60 * 60 * 24,
+	});
+
+	res.cookie("refreshToken", refreshToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "lax",
+		maxAge: 1000 * 60 * 60 * 24 * 7,
+	});
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Demo login successful",
+		data: {
+			user,
+		},
+	});
+});
+const logout = catchAsync(async (_req: Request, res: Response) => {
+	res.clearCookie("accessToken", {
+		httpOnly: true,
+		secure: false,
+		sameSite: "lax",
+	});
+
+	res.clearCookie("refreshToken", {
+		httpOnly: true,
+		secure: false,
+		sameSite: "lax",
+	});
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Logged out successfully",
+		data: null,
+	});
+});
 const googleLogin = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
 
@@ -203,6 +254,8 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+
+
 export const AuthController = {
 	registerUser,
 	verifyEmail,
@@ -212,4 +265,6 @@ export const AuthController = {
 	forgotPassword,
 	resetPassword,
 	googleLogin,
+	logout,
+	demoLogin
 };

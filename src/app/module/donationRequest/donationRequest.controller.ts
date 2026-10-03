@@ -56,9 +56,11 @@ const getDonationRequestById = catchAsync(
 
 const updateDonationRequest = catchAsync(
 	async (req: Request, res: Response) => {
+		const payload =
+  DonationRequestValidation.updateDonationRequestZodSchema.parse(req.body);
 		const result = await DonationRequestService.updateDonationRequest(
 			req.params.requestId as string,
-			req.body,
+			payload,
 			req.user!,
 		);
 
@@ -70,6 +72,53 @@ const updateDonationRequest = catchAsync(
 		});
 	},
 );
+
+const getMyDonationRequests = catchAsync(
+	async (req: Request, res: Response) => {
+		const user = req.user as unknown as IRequestUser;
+
+		if (!user) {
+			throw new AppError(
+				httpStatus.UNAUTHORIZED,
+				"User information is missing in the request",
+			);
+		}
+
+		const result =
+			await DonationRequestService.getMyDonationRequests(user);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "My donation requests retrieved successfully",
+			data: result,
+		});
+	},
+);
+
+const getVerifiedDonationRequests = catchAsync(
+	async (req: Request, res: Response) => {
+		const user = req.user as unknown as IRequestUser;
+
+		if (!user) {
+			throw new AppError(
+				httpStatus.UNAUTHORIZED,
+				"User information is missing in the request",
+			);
+		}
+
+		const result =
+			await DonationRequestService.getVerifiedDonationRequests();
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Verified donation requests retrieved successfully",
+			data: result,
+		});
+	},
+);
+
 const deleteDonationRequest = catchAsync(
 	async (req: Request, res: Response) => {
 		await DonationRequestService.deleteDonationRequest(
@@ -90,5 +139,7 @@ export const DonationRequestController = {
 	createDonationRequest,
 	getDonationRequestById,
 	updateDonationRequest,
-	deleteDonationRequest
+	deleteDonationRequest,
+	getMyDonationRequests,
+	getVerifiedDonationRequests
 };

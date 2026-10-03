@@ -14,7 +14,10 @@ import { PaymentRoutes } from "./app/module/payment/payment.route.js";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3000",
+  credentials: true,
+  }),);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -60,7 +63,7 @@ app.get("/api-docs", (_req, res) => {
 });
 
 
-app.use("/api/auth", AuthRoutes);
+app.use("/api/auth",AuthRoutes);
 app.use("/api/donation-requests", DonationRequestRoutes);
 app.use("/api/admin", AdminRoutes);
 app.use("/api/donor", DonorRoutes);

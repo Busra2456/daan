@@ -13,6 +13,19 @@ router.post(
 );
 
 router.get(
+	"/verified",
+	auth(Role.DONOR),
+	DonationRequestController.getVerifiedDonationRequests,
+);
+
+router.get(
+	"/my-requests",
+	auth(Role.NEEDY),
+	DonationRequestController.getMyDonationRequests,
+);
+
+
+router.get(
 	"/:requestId",
 	auth("ADMIN", "DONOR", "NEEDY"),
 	DonationRequestController.getDonationRequestById,
@@ -23,6 +36,7 @@ router.patch(
 	auth(Role.NEEDY),
 	DonationRequestController.updateDonationRequest,
 );
+
 
 router.delete(
 	"/:requestId",

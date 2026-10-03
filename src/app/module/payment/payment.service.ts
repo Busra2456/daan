@@ -70,6 +70,7 @@ const createPayment = async (donationId: string, user: IRequestUser) => {
 	);
 
 	const result = await response.json();
+	
 
 	if (!response.ok || result.statusCode !== "0000") {
 		throw new AppError(

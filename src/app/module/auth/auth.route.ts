@@ -65,9 +65,9 @@ router.post(
 	validateRequest(UserValidation.LoginZodSchema),
 	AuthController.loginUser,
 );
+router.post("/logout", AuthController.logout);
 
-router.post(
-	"/google-login",
+router.post("/google-login",
 	validateRequest(UserValidation.GoogleLoginZodSchema),
 	AuthController.googleLogin,
 );
@@ -87,6 +87,11 @@ router.post(
 	"/reset-password",
 	validateRequest(UserValidation.ResetPasswordZodSchema),
 	AuthController.resetPassword,
+);
+router.post(
+	"/demo-login",
+	validateRequest(UserValidation.DemoLoginZodSchema),
+	AuthController.demoLogin,
 );
 
 router.post("/refresh-token", AuthController.refreshToken);

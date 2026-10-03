@@ -20,6 +20,15 @@ export default {
 	admin_name: process.env.ADMIN_NAME,
 	admin_email: process.env.ADMIN_EMAIL,
 	admin_password: process.env.ADMIN_PASSWORD,
+	
+	demo_admin_email: process.env.DEMO_ADMIN_EMAIL,
+     demo_admin_password: process.env.DEMO_ADMIN_PASSWORD,
+
+demo_donor_email: process.env.DEMO_DONOR_EMAIL,
+demo_donor_password: process.env.DEMO_DONOR_PASSWORD,
+
+demo_needy_email: process.env.DEMO_NEEDY_EMAIL,
+demo_needy_password: process.env.DEMO_NEEDY_PASSWORD,
 
 	redis_user: process.env.REDIS_USER!,
 	redis_password: process.env.REDIS_PASSWORD!,

@@ -723,6 +723,136 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 	};
 };
 
+const demoLogin = async (role: Role) => {
+	let email: string | undefined;
+	let password: string | undefined;
+
+	switch (role) {
+		case Role.ADMIN:
+			email = config.demo_admin_email;
+			password = config.demo_admin_password;
+			break;
+
+		case Role.DONOR:
+			email = config.demo_donor_email;
+			password = config.demo_donor_password;
+			break;
+
+		case Role.NEEDY:
+			email = config.demo_needy_email;
+			password = config.demo_needy_password;
+			break;
+
+		default:
+			throw new AppError(
+				httpStatus.BAD_REQUEST,
+				"Invalid demo role",
+			);
+	}
+
+	if (!email || !password) {
+		throw new AppError(
+			httpStatus.INTERNAL_SERVER_ERROR,
+			`Demo ${role} credentials are missing in environment variables`,
+		);
+	}
+
+	const user = await prisma.user.findUnique({
+		where: {
+			email: email.trim().toLowerCase(),
+		},
+	});
+
+	if (!user) {
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			`Demo ${role} user not found`,
+		);
+	}
+
+	if (user.status === UserStatus.BLOCKED) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Demo user is blocked",
+		);
+	}
+
+	if (user.isDeleted || user.status === UserStatus.DELETED) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Demo user is deleted",
+		);
+	}
+
+	if (user.role !== role) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"Demo user role does not match",
+		);
+	}
+
+	if (!user.emailVerified) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Demo user email is not verified",
+		);
+	}
+
+	if (!user.password) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"Demo user does not have a password",
+		);
+	}
+
+	const isPasswordMatched = await bcrypt.compare(
+		password,
+		user.password,
+	);
+
+	if (!isPasswordMatched) {
+		throw new AppError(
+			httpStatus.UNAUTHORIZED,
+			"Demo user credentials are invalid",
+		);
+	}
+
+	const jwtPayload = {
+		userId: user.id,
+		name: user.name,
+		email: user.email,
+		role: user.role,
+	};
+
+	const accessToken = jwtUtils.createToken(
+		jwtPayload,
+		config.jwt_access_secret,
+		config.jwt_access_expires_in as SignOptions,
+	);
+
+	const refreshToken = jwtUtils.createToken(
+		jwtPayload,
+		config.jwt_refresh_secret,
+		config.jwt_refresh_expires_in as SignOptions,
+	);
+
+	return {
+		user: {
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			phone: user.phone,
+			address: user.address,
+			imageUrl: user.imageUrl,
+			role: user.role,
+			status: user.status,
+			authProvider: user.authProvider,
+			emailVerified: user.emailVerified,
+		},
+		accessToken,
+		refreshToken,
+	};
+};
 export const AuthService = {
 	registerUser,
 	verifyEmail,
@@ -732,4 +862,5 @@ export const AuthService = {
 	forgotPassword,
 	resetPassword,
 	googleLogin,
+	demoLogin
 };

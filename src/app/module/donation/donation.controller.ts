@@ -33,7 +33,23 @@ const getMyDonations = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const getReceivedDonations = catchAsync(
+  async (req: Request, res: Response) => {
+    const user = req.user as unknown as IRequestUser;
+
+    const result = await DonationService.getReceivedDonations(user);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Received donations retrieved successfully",
+      data: result,
+    });
+  },
+);
+
 export const DonationController = {
 	createDonation,
 	getMyDonations,
+	getReceivedDonations
 };

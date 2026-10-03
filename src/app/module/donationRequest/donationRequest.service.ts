@@ -157,6 +157,54 @@ const updateDonationRequest = async (
 	return updatedDonationRequest;
 };
 
+const getMyDonationRequests = async (user: IRequestUser) => {
+	const donationRequests = await prisma.donationRequest.findMany({
+		where: {
+			needyId: user.userId,
+		},
+		include: {
+			needy: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					phone: true,
+					address: true,
+					imageUrl: true,
+				},
+			},
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+	});
+
+	return donationRequests;
+};
+
+const getVerifiedDonationRequests = async () => {
+	const donationRequests = await prisma.donationRequest.findMany({
+		where: {
+			status: "VERIFIED",
+		},
+		include: {
+			needy: {
+				select: {
+					id: true,
+					name: true,
+					imageUrl: true,
+					address: true,
+				},
+			},
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+	});
+
+	return donationRequests;
+};
+
 const deleteDonationRequest = async (
 	requestId: string,
 	user: IRequestUser,
@@ -198,5 +246,7 @@ export const DonationRequestService = {
 	createDonationRequest,
 	getDonationRequestById,
 	updateDonationRequest,
-	deleteDonationRequest
+	deleteDonationRequest,
+	getMyDonationRequests,
+	getVerifiedDonationRequests
 };

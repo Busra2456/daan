@@ -43,3 +43,7 @@ export interface IResetPasswordPayload {
 export interface IGoogleLoginPayload {
 	idToken: string;
 }
+
+export interface IDemoLoginPayload {
+	role: Role;
+}

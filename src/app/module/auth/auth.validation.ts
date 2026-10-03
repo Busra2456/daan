@@ -52,6 +52,9 @@ const LoginZodSchema = z.object({
 const GoogleLoginZodSchema = z.object({
 	idToken: z.string().min(1, "Google ID token is required"),
 });
+const DemoLoginZodSchema = z.object({
+	role: z.enum(["ADMIN", "DONOR", "NEEDY"]),
+});
 
 const ForgotPasswordZodSchema = z.object({
 	email: z.email("Invalid email"),
@@ -84,4 +87,5 @@ export const UserValidation = {
 	ForgotPasswordZodSchema,
 	ResetPasswordZodSchema,
 	GoogleLoginZodSchema,
+	DemoLoginZodSchema
 };

@@ -755,6 +755,12 @@ var config_default = {
   admin_name: process.env.ADMIN_NAME,
   admin_email: process.env.ADMIN_EMAIL,
   admin_password: process.env.ADMIN_PASSWORD,
+  demo_admin_email: process.env.DEMO_ADMIN_EMAIL,
+  demo_admin_password: process.env.DEMO_ADMIN_PASSWORD,
+  demo_donor_email: process.env.DEMO_DONOR_EMAIL,
+  demo_donor_password: process.env.DEMO_DONOR_PASSWORD,
+  demo_needy_email: process.env.DEMO_NEEDY_EMAIL,
+  demo_needy_password: process.env.DEMO_NEEDY_PASSWORD,
   redis_user: process.env.REDIS_USER,
   redis_password: process.env.REDIS_PASSWORD,
   redis_host: process.env.REDIS_HOST,
@@ -1675,6 +1681,118 @@ var googleLogin = async (payload) => {
     refreshToken: refreshToken3
   };
 };
+var demoLogin = async (role) => {
+  let email;
+  let password;
+  switch (role) {
+    case Role.ADMIN:
+      email = config_default.demo_admin_email;
+      password = config_default.demo_admin_password;
+      break;
+    case Role.DONOR:
+      email = config_default.demo_donor_email;
+      password = config_default.demo_donor_password;
+      break;
+    case Role.NEEDY:
+      email = config_default.demo_needy_email;
+      password = config_default.demo_needy_password;
+      break;
+    default:
+      throw new AppError(
+        httpStatus6.BAD_REQUEST,
+        "Invalid demo role"
+      );
+  }
+  if (!email || !password) {
+    throw new AppError(
+      httpStatus6.INTERNAL_SERVER_ERROR,
+      `Demo ${role} credentials are missing in environment variables`
+    );
+  }
+  const user = await prisma.user.findUnique({
+    where: {
+      email: email.trim().toLowerCase()
+    }
+  });
+  if (!user) {
+    throw new AppError(
+      httpStatus6.NOT_FOUND,
+      `Demo ${role} user not found`
+    );
+  }
+  if (user.status === UserStatus.BLOCKED) {
+    throw new AppError(
+      httpStatus6.FORBIDDEN,
+      "Demo user is blocked"
+    );
+  }
+  if (user.isDeleted || user.status === UserStatus.DELETED) {
+    throw new AppError(
+      httpStatus6.FORBIDDEN,
+      "Demo user is deleted"
+    );
+  }
+  if (user.role !== role) {
+    throw new AppError(
+      httpStatus6.BAD_REQUEST,
+      "Demo user role does not match"
+    );
+  }
+  if (!user.emailVerified) {
+    throw new AppError(
+      httpStatus6.FORBIDDEN,
+      "Demo user email is not verified"
+    );
+  }
+  if (!user.password) {
+    throw new AppError(
+      httpStatus6.BAD_REQUEST,
+      "Demo user does not have a password"
+    );
+  }
+  const isPasswordMatched = await bcrypt.compare(
+    password,
+    user.password
+  );
+  if (!isPasswordMatched) {
+    throw new AppError(
+      httpStatus6.UNAUTHORIZED,
+      "Demo user credentials are invalid"
+    );
+  }
+  const jwtPayload = {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role
+  };
+  const accessToken = jwtUtils.createToken(
+    jwtPayload,
+    config_default.jwt_access_secret,
+    config_default.jwt_access_expires_in
+  );
+  const refreshToken3 = jwtUtils.createToken(
+    jwtPayload,
+    config_default.jwt_refresh_secret,
+    config_default.jwt_refresh_expires_in
+  );
+  return {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      imageUrl: user.imageUrl,
+      role: user.role,
+      status: user.status,
+      authProvider: user.authProvider,
+      emailVerified: user.emailVerified
+    },
+    accessToken,
+    refreshToken: refreshToken3
+  };
+};
 var AuthService = {
   registerUser,
   verifyEmail,
@@ -1683,7 +1801,8 @@ var AuthService = {
   refreshToken,
   forgotPassword,
   resetPassword,
-  googleLogin
+  googleLogin,
+  demoLogin
 };
 
 // src/app/module/auth/auth.controller.ts
@@ -1816,6 +1935,49 @@ var refreshToken2 = catchAsync(async (req, res) => {
     }
   });
 });
+var demoLogin2 = catchAsync(async (req, res) => {
+  const { role } = req.body;
+  const result = await AuthService.demoLogin(role);
+  const { accessToken, refreshToken: refreshToken3, user } = result;
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 1e3 * 60 * 60 * 24
+  });
+  res.cookie("refreshToken", refreshToken3, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 1e3 * 60 * 60 * 24 * 7
+  });
+  sendResponse(res, {
+    statusCode: httpStatus7.OK,
+    success: true,
+    message: "Demo login successful",
+    data: {
+      user
+    }
+  });
+});
+var logout = catchAsync(async (_req, res) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax"
+  });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax"
+  });
+  sendResponse(res, {
+    statusCode: httpStatus7.OK,
+    success: true,
+    message: "Logged out successfully",
+    data: null
+  });
+});
 var googleLogin2 = catchAsync(async (req, res) => {
   const payload = req.body;
   const result = await AuthService.googleLogin(payload);
@@ -1850,7 +2012,9 @@ var AuthController = {
   refreshToken: refreshToken2,
   forgotPassword: forgotPassword2,
   resetPassword: resetPassword2,
-  googleLogin: googleLogin2
+  googleLogin: googleLogin2,
+  logout,
+  demoLogin: demoLogin2
 };
 
 // src/app/module/auth/auth.validation.ts
@@ -1882,6 +2046,9 @@ var LoginZodSchema = z.object({
 var GoogleLoginZodSchema = z.object({
   idToken: z.string().min(1, "Google ID token is required")
 });
+var DemoLoginZodSchema = z.object({
+  role: z.enum(["ADMIN", "DONOR", "NEEDY"])
+});
 var ForgotPasswordZodSchema = z.object({
   email: z.email("Invalid email")
 });
@@ -1899,7 +2066,8 @@ var UserValidation = {
   LoginZodSchema,
   ForgotPasswordZodSchema,
   ResetPasswordZodSchema,
-  GoogleLoginZodSchema
+  GoogleLoginZodSchema,
+  DemoLoginZodSchema
 };
 
 // src/app/module/auth/auth.route.ts
@@ -1919,6 +2087,7 @@ router2.post(
   validateRequest(UserValidation.LoginZodSchema),
   AuthController.loginUser
 );
+router2.post("/logout", AuthController.logout);
 router2.post(
   "/google-login",
   validateRequest(UserValidation.GoogleLoginZodSchema),
@@ -1938,6 +2107,11 @@ router2.post(
   "/reset-password",
   validateRequest(UserValidation.ResetPasswordZodSchema),
   AuthController.resetPassword
+);
+router2.post(
+  "/demo-login",
+  validateRequest(UserValidation.DemoLoginZodSchema),
+  AuthController.demoLogin
 );
 router2.post("/refresh-token", AuthController.refreshToken);
 var AuthRoutes = router2;
@@ -2259,9 +2433,66 @@ var getMyDonations = async (user) => {
   });
   return donations;
 };
+var getReceivedDonations = async (user) => {
+  const needyUser = await prisma.user.findUnique({
+    where: {
+      id: user.userId
+    }
+  });
+  if (!needyUser) {
+    throw new AppError(httpStatus10.NOT_FOUND, "User not found");
+  }
+  if (needyUser.role !== "NEEDY") {
+    throw new AppError(
+      httpStatus10.FORBIDDEN,
+      "Only needy users can view received donations"
+    );
+  }
+  if (needyUser.isDeleted || needyUser.status === "DELETED" || needyUser.status === "BLOCKED") {
+    throw new AppError(
+      httpStatus10.FORBIDDEN,
+      "Your account is not allowed to view received donations"
+    );
+  }
+  const donations = await prisma.donation.findMany({
+    where: {
+      request: {
+        needyId: user.userId
+      },
+      status: "COMPLETED"
+    },
+    include: {
+      request: {
+        select: {
+          id: true,
+          title: true
+        }
+      },
+      donor: {
+        select: {
+          id: true,
+          name: true,
+          imageUrl: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  const totalReceived = donations.reduce(
+    (total, donation) => total + Number(donation.amount),
+    0
+  );
+  return {
+    totalReceived,
+    donations
+  };
+};
 var DonationService = {
   createDonation,
-  getMyDonations
+  getMyDonations,
+  getReceivedDonations
 };
 
 // src/app/module/donation/donation.controller.ts
@@ -2285,14 +2516,32 @@ var getMyDonations2 = catchAsync(async (req, res) => {
     data: result
   });
 });
+var getReceivedDonations2 = catchAsync(
+  async (req, res) => {
+    const user = req.user;
+    const result = await DonationService.getReceivedDonations(user);
+    sendResponse(res, {
+      statusCode: httpStatus11.OK,
+      success: true,
+      message: "Received donations retrieved successfully",
+      data: result
+    });
+  }
+);
 var DonationController = {
   createDonation: createDonation2,
-  getMyDonations: getMyDonations2
+  getMyDonations: getMyDonations2,
+  getReceivedDonations: getReceivedDonations2
 };
 
 // src/app/module/donation/donation.route.ts
 var router4 = Router4();
 router4.post("/", auth("DONOR"), DonationController.createDonation);
+router4.get(
+  "/received",
+  auth("NEEDY"),
+  DonationController.getReceivedDonations
+);
 router4.get("/my-donations", auth("DONOR"), DonationController.getMyDonations);
 var DonationRoutes = router4;
 
@@ -2414,6 +2663,50 @@ var updateDonationRequest = async (requestId, payload, user) => {
   });
   return updatedDonationRequest;
 };
+var getMyDonationRequests = async (user) => {
+  const donationRequests = await prisma.donationRequest.findMany({
+    where: {
+      needyId: user.userId
+    },
+    include: {
+      needy: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          address: true,
+          imageUrl: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return donationRequests;
+};
+var getVerifiedDonationRequests = async () => {
+  const donationRequests = await prisma.donationRequest.findMany({
+    where: {
+      status: "VERIFIED"
+    },
+    include: {
+      needy: {
+        select: {
+          id: true,
+          name: true,
+          imageUrl: true,
+          address: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return donationRequests;
+};
 var deleteDonationRequest = async (requestId, user) => {
   const donationRequest = await prisma.donationRequest.findUnique({
     where: {
@@ -2446,7 +2739,9 @@ var DonationRequestService = {
   createDonationRequest,
   getDonationRequestById,
   updateDonationRequest,
-  deleteDonationRequest
+  deleteDonationRequest,
+  getMyDonationRequests,
+  getVerifiedDonationRequests
 };
 
 // src/app/module/donationRequest/donationRequest.validation.ts
@@ -2458,8 +2753,16 @@ var createDonationRequestZodSchema = z2.object({
   situationVideo: z2.string("Situation video must be a string").url("Situation video must be a valid URL").optional(),
   situationAudio: z2.string("Situation audio must be a string").url("Situation audio must be a valid URL").optional()
 });
+var updateDonationRequestZodSchema = z2.object({
+  title: z2.string("Title must be a string").min(3, "Title must be at least 3 characters long").max(200, "Title cannot exceed 200 characters").optional(),
+  description: z2.string("Description must be a string").min(10, "Description must be at least 10 characters long").optional(),
+  requiredAmount: z2.number("Required amount must be a number").positive("Required amount must be greater than 0").optional(),
+  situationVideo: z2.string("Situation video must be a string").url("Situation video must be a valid URL").optional(),
+  situationAudio: z2.string("Situation audio must be a string").url("Situation audio must be a valid URL").optional()
+});
 var DonationRequestValidation = {
-  createDonationRequestZodSchema
+  createDonationRequestZodSchema,
+  updateDonationRequestZodSchema
 };
 
 // src/app/module/donationRequest/donationRequest.controller.ts
@@ -2502,15 +2805,52 @@ var getDonationRequestById2 = catchAsync(
 );
 var updateDonationRequest2 = catchAsync(
   async (req, res) => {
+    const payload = DonationRequestValidation.updateDonationRequestZodSchema.parse(req.body);
     const result = await DonationRequestService.updateDonationRequest(
       req.params.requestId,
-      req.body,
+      payload,
       req.user
     );
     sendResponse(res, {
       statusCode: httpStatus13.OK,
       success: true,
       message: "Donation request updated successfully",
+      data: result
+    });
+  }
+);
+var getMyDonationRequests2 = catchAsync(
+  async (req, res) => {
+    const user = req.user;
+    if (!user) {
+      throw new AppError(
+        httpStatus13.UNAUTHORIZED,
+        "User information is missing in the request"
+      );
+    }
+    const result = await DonationRequestService.getMyDonationRequests(user);
+    sendResponse(res, {
+      statusCode: httpStatus13.OK,
+      success: true,
+      message: "My donation requests retrieved successfully",
+      data: result
+    });
+  }
+);
+var getVerifiedDonationRequests2 = catchAsync(
+  async (req, res) => {
+    const user = req.user;
+    if (!user) {
+      throw new AppError(
+        httpStatus13.UNAUTHORIZED,
+        "User information is missing in the request"
+      );
+    }
+    const result = await DonationRequestService.getVerifiedDonationRequests();
+    sendResponse(res, {
+      statusCode: httpStatus13.OK,
+      success: true,
+      message: "Verified donation requests retrieved successfully",
       data: result
     });
   }
@@ -2533,7 +2873,9 @@ var DonationRequestController = {
   createDonationRequest: createDonationRequest2,
   getDonationRequestById: getDonationRequestById2,
   updateDonationRequest: updateDonationRequest2,
-  deleteDonationRequest: deleteDonationRequest2
+  deleteDonationRequest: deleteDonationRequest2,
+  getMyDonationRequests: getMyDonationRequests2,
+  getVerifiedDonationRequests: getVerifiedDonationRequests2
 };
 
 // src/app/module/donationRequest/donationRequest.route.ts
@@ -2542,6 +2884,16 @@ router5.post(
   "/",
   auth(Role.NEEDY),
   DonationRequestController.createDonationRequest
+);
+router5.get(
+  "/verified",
+  auth(Role.DONOR),
+  DonationRequestController.getVerifiedDonationRequests
+);
+router5.get(
+  "/my-requests",
+  auth(Role.NEEDY),
+  DonationRequestController.getMyDonationRequests
 );
 router5.get(
   "/:requestId",
@@ -2568,7 +2920,7 @@ import httpStatus15 from "http-status";
 
 // src/app/module/donor/donor.service.ts
 import httpStatus14 from "http-status";
-var getVerifiedDonationRequests = async (user) => {
+var getVerifiedDonationRequests3 = async (user) => {
   const donorUser = await prisma.user.findUnique({
     where: {
       id: user.userId
@@ -2612,11 +2964,11 @@ var getVerifiedDonationRequests = async (user) => {
   return donationRequests;
 };
 var DonorService = {
-  getVerifiedDonationRequests
+  getVerifiedDonationRequests: getVerifiedDonationRequests3
 };
 
 // src/app/module/donor/donor.controller.ts
-var getVerifiedDonationRequests2 = catchAsync(
+var getVerifiedDonationRequests4 = catchAsync(
   async (req, res) => {
     const user = req.user;
     const result = await DonorService.getVerifiedDonationRequests(user);
@@ -2629,7 +2981,7 @@ var getVerifiedDonationRequests2 = catchAsync(
   }
 );
 var DonorController = {
-  getVerifiedDonationRequests: getVerifiedDonationRequests2
+  getVerifiedDonationRequests: getVerifiedDonationRequests4
 };
 
 // src/app/module/donor/donor.route.ts
@@ -2997,13 +3349,9 @@ var bkashCallback = catchAsync(async (req, res) => {
   const donation = await PaymentService.executePaymentByPaymentId(
     paymentID
   );
-  return res.status(httpStatus18.OK).json({
-    success: true,
-    message: "bKash payment callback received",
-    paymentID,
-    status,
-    donationId: donation.id
-  });
+  return res.redirect(
+    `${config_default.frontend_url}/donor-dashboard/payment-success?donationId=${donation.id}`
+  );
 });
 var PaymentController = {
   createPayment: createPayment2,
@@ -3028,7 +3376,10 @@ var PaymentRoutes = router7;
 
 // src/app.ts
 var app = express();
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.get("/", (_req, res) => {
