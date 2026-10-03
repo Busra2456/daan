@@ -69,7 +69,7 @@ const bkashCallback = catchAsync(async (req: Request, res: Response) => {
   );
 
   return res.redirect(
-    `${config.frontend_url}/donor-dashboard/payment-success?donationId=${donation.id}`,
+    `${config.frontend_url}/payment-success?donationId=${donation.id}`,
   );
 });
 
