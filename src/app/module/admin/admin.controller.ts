@@ -62,8 +62,44 @@ const rejectDonationRequest = catchAsync(
 	},
 );
 
+const getAllDonationRequests = catchAsync(
+	async (req: Request, res: Response) => {
+		const user = req.user as unknown as IRequestUser;
+
+		const result = await AdminService.getAllDonationRequests(user);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "All donation requests retrieved successfully",
+			data: result,
+		});
+	},
+);
+
+const getDonationRequestDetails = catchAsync(
+	async (req: Request, res: Response) => {
+		const user = req.user as unknown as IRequestUser;
+		const requestId = req.params.requestId as string;
+
+		const result = await AdminService.getDonationRequestDetails(
+			requestId,
+			user,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Donation request details retrieved successfully",
+			data: result,
+		});
+	},
+);
+
 export const AdminController = {
 	getPendingDonationRequests,
 	verifyDonationRequest,
 	rejectDonationRequest,
+	getAllDonationRequests,
+	getDonationRequestDetails
 };

@@ -120,8 +120,92 @@ const rejectDonationRequest = async (
 	return rejectedRequest;
 };
 
+const getAllDonationRequests = async (user: IRequestUser) => {
+	if (user.role !== "ADMIN") {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Only admin can view all donation requests",
+		);
+	}
+
+	const requests = await prisma.donationRequest.findMany({
+		include: {
+			needy: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					phone: true,
+					address: true,
+					imageUrl: true,
+				},
+			},
+			reviewedBy: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+				},
+			},
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+	});
+
+	return requests;
+};
+
+const getDonationRequestDetails = async (
+	requestId: string,
+	user: IRequestUser,
+) => {
+	if (user.role !== "ADMIN") {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Only admin can view donation request details",
+		);
+	}
+
+	const donationRequest = await prisma.donationRequest.findUnique({
+		where: {
+			id: requestId,
+		},
+		include: {
+			needy: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					phone: true,
+					address: true,
+					imageUrl: true,
+				},
+			},
+			reviewedBy: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+				},
+			},
+		},
+	});
+
+	if (!donationRequest) {
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			"Donation request not found",
+		);
+	}
+
+	return donationRequest;
+};
+
 export const AdminService = {
 	getPendingDonationRequests,
 	verifyDonationRequest,
 	rejectDonationRequest,
+	getAllDonationRequests,
+	getDonationRequestDetails
 };

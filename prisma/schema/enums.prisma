@@ -19,6 +19,7 @@ enum DonationRequestStatus {
   PENDING
   VERIFIED
   REJECTED
+  DONATIONS
   COMPLETED
 }
 

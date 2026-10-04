@@ -11,13 +11,18 @@ import { DonationRoutes } from "./app/module/donation/donation.route.js";
 import { DonationRequestRoutes } from "./app/module/donationRequest/donationRequest.route.js";
 import { DonorRoutes } from "./app/module/donor/donor.route.js";
 import { PaymentRoutes } from "./app/module/payment/payment.route.js";
+import { UserRoutes } from "./app/module/user/user.route.js";
 
 const app = express();
+const allowedOrigin =
+  process.env.FRONTEND_URL || "http://localhost:3000";
 
-app.use(cors({
-    origin: "http://localhost:3000",
-  credentials: true,
-  }),);
+app.use(
+  cors({
+    origin: allowedOrigin,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -62,7 +67,7 @@ app.get("/api-docs", (_req, res) => {
   `);
 });
 
-
+app.use("/api/users", UserRoutes);
 app.use("/api/auth",AuthRoutes);
 app.use("/api/donation-requests", DonationRequestRoutes);
 app.use("/api/admin", AdminRoutes);
