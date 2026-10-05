@@ -2016,17 +2016,16 @@ var demoLogin2 = catchAsync(async (req, res) => {
   const { role } = req.body;
   const result = await AuthService.demoLogin(role);
   const { accessToken, refreshToken: refreshToken3, user } = result;
-  const isProduction = process.env.NODE_ENV === "production";
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: true,
+    sameSite: "none",
     maxAge: 1e3 * 60 * 60 * 24
   });
   res.cookie("refreshToken", refreshToken3, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: true,
+    sameSite: "none",
     maxAge: 1e3 * 60 * 60 * 24 * 7
   });
   sendResponse(res, {
