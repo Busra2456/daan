@@ -17,7 +17,7 @@ const users = await prisma.user.findMany({
 		where: {
 			isDeleted: false,
 			email: {
-				not: process.env.admin_email!,
+				not: process.env.ADMIN_EMAIL!,
 			},
 		},
 		select: {

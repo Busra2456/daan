@@ -3468,7 +3468,7 @@ var getAllUsers = async (user) => {
     where: {
       isDeleted: false,
       email: {
-        not: process.env.admin_email
+        not: process.env.ADMIN_EMAIL
       }
     },
     select: {
