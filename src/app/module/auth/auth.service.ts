@@ -27,6 +27,7 @@ import type {
 	IResetPasswordPayload,
 	IVerifyEmailPayload,
 } from "./auth.interface.js";
+import { getSafeUser } from "./auth.utils.js";
 
 const registerUser = async (payload: IRegisterUserPayload) => {
 	const {
@@ -226,22 +227,10 @@ const verifyEmail = async (payload: IVerifyEmailPayload) => {
 	);
 
 	return {
-		user: {
-			id: result.id,
-			name: result.name,
-			email: result.email,
-			phone: result.phone,
-			address: result.address,
-			imageUrl: result.imageUrl,
-			role: result.role,
-			status: result.status,
-			authProvider: result.authProvider,
-			emailVerified: result.emailVerified,
-		},
-
-		accessToken,
-		refreshToken,
-	};
+  user: getSafeUser(result),
+  accessToken,
+  refreshToken,
+};
 };
 
 const loginUser = async (payload: ILoginUserPayload) => {
@@ -309,23 +298,11 @@ const loginUser = async (payload: ILoginUserPayload) => {
 		config.jwt_refresh_expires_in as SignOptions,
 	);
 
-	return {
-		user: {
-			id: user.id,
-			name: user.name,
-			email: user.email,
-			phone: user.phone,
-			address: user.address,
-			imageUrl: user.imageUrl,
-			role: user.role,
-			status: user.status,
-			authProvider: user.authProvider,
-			emailVerified: user.emailVerified,
-		},
-
-		accessToken,
-		refreshToken,
-	};
+return {
+  user: getSafeUser(user),
+  accessToken,
+  refreshToken,
+};
 };
 
 const getMe = async (user: IRequestUser) => {
@@ -718,140 +695,110 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 	);
 
 	return {
-		accessToken,
-		refreshToken,
-	};
+  user: getSafeUser(user),
+  accessToken,
+  refreshToken,
+};
 };
 
 const demoLogin = async (role: Role) => {
-	let email: string | undefined;
-	let password: string | undefined;
+  const credentials = {
+    [Role.ADMIN]: {
+      email: config.demo_admin_email,
+      password: config.demo_admin_password,
+    },
+    [Role.DONOR]: {
+      email: config.demo_donor_email,
+      password: config.demo_donor_password,
+    },
+    [Role.NEEDY]: {
+      email: config.demo_needy_email,
+      password: config.demo_needy_password,
+    },
+  }[role];
 
-	switch (role) {
-		case Role.ADMIN:
-			email = config.demo_admin_email;
-			password = config.demo_admin_password;
-			break;
+  if (!credentials?.email || !credentials.password) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `Demo ${role} credentials are missing in environment variables`,
+    );
+  }
 
-		case Role.DONOR:
-			email = config.demo_donor_email;
-			password = config.demo_donor_password;
-			break;
+  const user = await prisma.user.findUnique({
+    where: {
+      email: credentials.email.trim().toLowerCase(),
+    },
+  });
 
-		case Role.NEEDY:
-			email = config.demo_needy_email;
-			password = config.demo_needy_password;
-			break;
+  if (!user) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      `Demo ${role} user not found`,
+    );
+  }
 
-		default:
-			throw new AppError(
-				httpStatus.BAD_REQUEST,
-				"Invalid demo role",
-			);
-	}
+  if (user.status === UserStatus.BLOCKED) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Demo user is blocked",
+    );
+  }
 
-	if (!email || !password) {
-		throw new AppError(
-			httpStatus.INTERNAL_SERVER_ERROR,
-			`Demo ${role} credentials are missing in environment variables`,
-		);
-	}
+  if (user.isDeleted || user.status === UserStatus.DELETED) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Demo user is deleted",
+    );
+  }
 
-	const user = await prisma.user.findUnique({
-		where: {
-			email: email.trim().toLowerCase(),
-		},
-	});
+  if (user.role !== role) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Demo user role does not match",
+    );
+  }
 
-	if (!user) {
-		throw new AppError(
-			httpStatus.NOT_FOUND,
-			`Demo ${role} user not found`,
-		);
-	}
+  if (!user.emailVerified) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Demo user email is not verified",
+    );
+  }
 
-	if (user.status === UserStatus.BLOCKED) {
-		throw new AppError(
-			httpStatus.FORBIDDEN,
-			"Demo user is blocked",
-		);
-	}
+  if (
+    !user.password ||
+    !(await bcrypt.compare(credentials.password, user.password))
+  ) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      "Demo user credentials are invalid",
+    );
+  }
 
-	if (user.isDeleted || user.status === UserStatus.DELETED) {
-		throw new AppError(
-			httpStatus.FORBIDDEN,
-			"Demo user is deleted",
-		);
-	}
+  const jwtPayload = {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
 
-	if (user.role !== role) {
-		throw new AppError(
-			httpStatus.BAD_REQUEST,
-			"Demo user role does not match",
-		);
-	}
+  const accessToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_access_secret,
+    config.jwt_access_expires_in as SignOptions,
+  );
 
-	if (!user.emailVerified) {
-		throw new AppError(
-			httpStatus.FORBIDDEN,
-			"Demo user email is not verified",
-		);
-	}
+  const refreshToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_refresh_secret,
+    config.jwt_refresh_expires_in as SignOptions,
+  );
 
-	if (!user.password) {
-		throw new AppError(
-			httpStatus.BAD_REQUEST,
-			"Demo user does not have a password",
-		);
-	}
-
-	const isPasswordMatched = await bcrypt.compare(
-		password,
-		user.password,
-	);
-
-	if (!isPasswordMatched) {
-		throw new AppError(
-			httpStatus.UNAUTHORIZED,
-			"Demo user credentials are invalid",
-		);
-	}
-
-	const jwtPayload = {
-		userId: user.id,
-		name: user.name,
-		email: user.email,
-		role: user.role,
-	};
-
-	const accessToken = jwtUtils.createToken(
-		jwtPayload,
-		config.jwt_access_secret,
-		config.jwt_access_expires_in as SignOptions,
-	);
-
-	const refreshToken = jwtUtils.createToken(
-		jwtPayload,
-		config.jwt_refresh_secret,
-		config.jwt_refresh_expires_in as SignOptions,
-	);
-
-	return {
-		user: {
-			id: user.id,
-			name: user.name,
-			email: user.email,
-			phone: user.phone,
-			address: user.address,
-			imageUrl: user.imageUrl,
-			role: user.role,
-			status: user.status,
-			authProvider: user.authProvider,
-			emailVerified: user.emailVerified,
-		},
-		accessToken,
-		refreshToken,
-	};
+  return {
+  user: getSafeUser(user),
+  accessToken,
+  refreshToken,
+};
 };
 export const AuthService = {
 	registerUser,

@@ -1003,10 +1003,84 @@ var rejectDonationRequest = async (requestId, rejectionReason, user) => {
   });
   return rejectedRequest;
 };
+var getAllDonationRequests = async (user) => {
+  if (user.role !== "ADMIN") {
+    throw new AppError(
+      httpStatus3.FORBIDDEN,
+      "Only admin can view all donation requests"
+    );
+  }
+  const requests = await prisma.donationRequest.findMany({
+    include: {
+      needy: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          address: true,
+          imageUrl: true
+        }
+      },
+      reviewedBy: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return requests;
+};
+var getDonationRequestDetails = async (requestId, user) => {
+  if (user.role !== "ADMIN") {
+    throw new AppError(
+      httpStatus3.FORBIDDEN,
+      "Only admin can view donation request details"
+    );
+  }
+  const donationRequest = await prisma.donationRequest.findUnique({
+    where: {
+      id: requestId
+    },
+    include: {
+      needy: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          address: true,
+          imageUrl: true
+        }
+      },
+      reviewedBy: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
+  });
+  if (!donationRequest) {
+    throw new AppError(
+      httpStatus3.NOT_FOUND,
+      "Donation request not found"
+    );
+  }
+  return donationRequest;
+};
 var AdminService = {
   getPendingDonationRequests,
   verifyDonationRequest,
-  rejectDonationRequest
+  rejectDonationRequest,
+  getAllDonationRequests,
+  getDonationRequestDetails
 };
 
 // src/app/module/admin/admin.controller.ts
@@ -1053,18 +1127,58 @@ var rejectDonationRequest2 = catchAsync(
     });
   }
 );
+var getAllDonationRequests2 = catchAsync(
+  async (req, res) => {
+    const user = req.user;
+    const result = await AdminService.getAllDonationRequests(user);
+    sendResponse(res, {
+      statusCode: httpStatus4.OK,
+      success: true,
+      message: "All donation requests retrieved successfully",
+      data: result
+    });
+  }
+);
+var getDonationRequestDetails2 = catchAsync(
+  async (req, res) => {
+    const user = req.user;
+    const requestId = req.params.requestId;
+    const result = await AdminService.getDonationRequestDetails(
+      requestId,
+      user
+    );
+    sendResponse(res, {
+      statusCode: httpStatus4.OK,
+      success: true,
+      message: "Donation request details retrieved successfully",
+      data: result
+    });
+  }
+);
 var AdminController = {
   getPendingDonationRequests: getPendingDonationRequests2,
   verifyDonationRequest: verifyDonationRequest2,
-  rejectDonationRequest: rejectDonationRequest2
+  rejectDonationRequest: rejectDonationRequest2,
+  getAllDonationRequests: getAllDonationRequests2,
+  getDonationRequestDetails: getDonationRequestDetails2
 };
 
 // src/app/module/admin/admin.route.ts
 var router = Router();
 router.get(
+  "/donation-requests",
+  auth("ADMIN"),
+  AdminController.getAllDonationRequests
+);
+router.get(
   "/donation-requests/pending",
   auth("ADMIN"),
   AdminController.getPendingDonationRequests
+);
+router.get(
+  "/donation-requests/:requestId",
+  auth("ADMIN"),
+  AdminController.getDonationRequestDetails
 );
 router.patch(
   "/donation-requests/:requestId/verify",
@@ -1144,6 +1258,20 @@ var connectRedis = async () => {
     await redisClient.connect();
   }
 };
+
+// src/app/module/auth/auth.utils.ts
+var getSafeUser = (user) => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  phone: user.phone,
+  address: user.address,
+  imageUrl: user.imageUrl,
+  role: user.role,
+  status: user.status,
+  authProvider: user.authProvider,
+  emailVerified: user.emailVerified
+});
 
 // src/app/module/auth/auth.service.ts
 var registerUser = async (payload) => {
@@ -1300,18 +1428,7 @@ var verifyEmail = async (payload) => {
     config_default.jwt_refresh_expires_in
   );
   return {
-    user: {
-      id: result.id,
-      name: result.name,
-      email: result.email,
-      phone: result.phone,
-      address: result.address,
-      imageUrl: result.imageUrl,
-      role: result.role,
-      status: result.status,
-      authProvider: result.authProvider,
-      emailVerified: result.emailVerified
-    },
+    user: getSafeUser(result),
     accessToken,
     refreshToken: refreshToken3
   };
@@ -1363,18 +1480,7 @@ var loginUser = async (payload) => {
     config_default.jwt_refresh_expires_in
   );
   return {
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      address: user.address,
-      imageUrl: user.imageUrl,
-      role: user.role,
-      status: user.status,
-      authProvider: user.authProvider,
-      emailVerified: user.emailVerified
-    },
+    user: getSafeUser(user),
     accessToken,
     refreshToken: refreshToken3
   };
@@ -1677,33 +1783,27 @@ var googleLogin = async (payload) => {
     config_default.jwt_refresh_expires_in
   );
   return {
+    user: getSafeUser(user),
     accessToken,
     refreshToken: refreshToken3
   };
 };
 var demoLogin = async (role) => {
-  let email;
-  let password;
-  switch (role) {
-    case Role.ADMIN:
-      email = config_default.demo_admin_email;
-      password = config_default.demo_admin_password;
-      break;
-    case Role.DONOR:
-      email = config_default.demo_donor_email;
-      password = config_default.demo_donor_password;
-      break;
-    case Role.NEEDY:
-      email = config_default.demo_needy_email;
-      password = config_default.demo_needy_password;
-      break;
-    default:
-      throw new AppError(
-        httpStatus6.BAD_REQUEST,
-        "Invalid demo role"
-      );
-  }
-  if (!email || !password) {
+  const credentials = {
+    [Role.ADMIN]: {
+      email: config_default.demo_admin_email,
+      password: config_default.demo_admin_password
+    },
+    [Role.DONOR]: {
+      email: config_default.demo_donor_email,
+      password: config_default.demo_donor_password
+    },
+    [Role.NEEDY]: {
+      email: config_default.demo_needy_email,
+      password: config_default.demo_needy_password
+    }
+  }[role];
+  if (!credentials?.email || !credentials.password) {
     throw new AppError(
       httpStatus6.INTERNAL_SERVER_ERROR,
       `Demo ${role} credentials are missing in environment variables`
@@ -1711,7 +1811,7 @@ var demoLogin = async (role) => {
   }
   const user = await prisma.user.findUnique({
     where: {
-      email: email.trim().toLowerCase()
+      email: credentials.email.trim().toLowerCase()
     }
   });
   if (!user) {
@@ -1744,17 +1844,7 @@ var demoLogin = async (role) => {
       "Demo user email is not verified"
     );
   }
-  if (!user.password) {
-    throw new AppError(
-      httpStatus6.BAD_REQUEST,
-      "Demo user does not have a password"
-    );
-  }
-  const isPasswordMatched = await bcrypt.compare(
-    password,
-    user.password
-  );
-  if (!isPasswordMatched) {
+  if (!user.password || !await bcrypt.compare(credentials.password, user.password)) {
     throw new AppError(
       httpStatus6.UNAUTHORIZED,
       "Demo user credentials are invalid"
@@ -1777,18 +1867,7 @@ var demoLogin = async (role) => {
     config_default.jwt_refresh_expires_in
   );
   return {
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      address: user.address,
-      imageUrl: user.imageUrl,
-      role: user.role,
-      status: user.status,
-      authProvider: user.authProvider,
-      emailVerified: user.emailVerified
-    },
+    user: getSafeUser(user),
     accessToken,
     refreshToken: refreshToken3
   };
@@ -1820,16 +1899,17 @@ var verifyEmail2 = catchAsync(async (req, res) => {
   const payload = req.body;
   const result = await AuthService.verifyEmail(payload);
   const { accessToken, refreshToken: refreshToken3, user } = result;
+  const isProduction = process.env.NODE_ENV === "production";
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1e3 * 60 * 60 * 24
   });
   res.cookie("refreshToken", refreshToken3, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1e3 * 60 * 60 * 24 * 7
   });
   sendResponse(res, {
@@ -1837,9 +1917,7 @@ var verifyEmail2 = catchAsync(async (req, res) => {
     success: true,
     message: "Email verified successfully",
     data: {
-      user,
-      accessToken,
-      refreshToken: refreshToken3
+      user
     }
   });
 });
@@ -1847,16 +1925,17 @@ var loginUser2 = catchAsync(async (req, res) => {
   const payload = req.body;
   const result = await AuthService.loginUser(payload);
   const { accessToken, refreshToken: refreshToken3, user } = result;
+  const isProduction = process.env.NODE_ENV === "production";
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1e3 * 60 * 60 * 24
   });
   res.cookie("refreshToken", refreshToken3, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1e3 * 60 * 60 * 24 * 7
   });
   sendResponse(res, {
@@ -1864,9 +1943,7 @@ var loginUser2 = catchAsync(async (req, res) => {
     success: true,
     message: "User logged in successfully",
     data: {
-      user,
-      accessToken,
-      refreshToken: refreshToken3
+      user
     }
   });
 });
@@ -1939,16 +2016,17 @@ var demoLogin2 = catchAsync(async (req, res) => {
   const { role } = req.body;
   const result = await AuthService.demoLogin(role);
   const { accessToken, refreshToken: refreshToken3, user } = result;
+  const isProduction = process.env.NODE_ENV === "production";
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1e3 * 60 * 60 * 24
   });
   res.cookie("refreshToken", refreshToken3, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1e3 * 60 * 60 * 24 * 7
   });
   sendResponse(res, {
@@ -1961,15 +2039,16 @@ var demoLogin2 = catchAsync(async (req, res) => {
   });
 });
 var logout = catchAsync(async (_req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
   res.clearCookie("accessToken", {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax"
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax"
   });
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax"
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax"
   });
   sendResponse(res, {
     statusCode: httpStatus7.OK,
@@ -1981,17 +2060,18 @@ var logout = catchAsync(async (_req, res) => {
 var googleLogin2 = catchAsync(async (req, res) => {
   const payload = req.body;
   const result = await AuthService.googleLogin(payload);
-  const { accessToken, refreshToken: refreshToken3 } = result;
+  const { accessToken, refreshToken: refreshToken3, user } = result;
+  const isProduction = process.env.NODE_ENV === "production";
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1e3 * 60 * 60 * 24
   });
   res.cookie("refreshToken", refreshToken3, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1e3 * 60 * 60 * 24 * 7
   });
   sendResponse(res, {
@@ -1999,8 +2079,7 @@ var googleLogin2 = catchAsync(async (req, res) => {
     success: true,
     message: "Google login successful",
     data: {
-      accessToken,
-      refreshToken: refreshToken3
+      user
     }
   });
 });
@@ -3327,6 +3406,7 @@ var executePayment2 = catchAsync(async (req, res) => {
   });
 });
 var bkashCallback = catchAsync(async (req, res) => {
+  console.log("\u{1F525} NEW BKASH CALLBACK CODE RUNNING");
   const { paymentID, status } = req.query;
   if (!paymentID) {
     return res.status(httpStatus18.BAD_REQUEST).json({
@@ -3350,7 +3430,7 @@ var bkashCallback = catchAsync(async (req, res) => {
     paymentID
   );
   return res.redirect(
-    `${config_default.frontend_url}/donor-dashboard/payment-success?donationId=${donation.id}`
+    `${config_default.frontend_url}/payment-success?donationId=${donation.id}`
   );
 });
 var PaymentController = {
@@ -3374,12 +3454,244 @@ router7.post(
 router7.get("/bkash/callback", PaymentController.bkashCallback);
 var PaymentRoutes = router7;
 
+// src/app/module/user/user.route.ts
+import { Router as Router8 } from "express";
+
+// src/app/module/user/user.controller.ts
+import httpStatus20 from "http-status";
+
+// src/app/module/user/user.service.ts
+import httpStatus19 from "http-status";
+var getAllUsers = async (user) => {
+  if (user.role !== "ADMIN") {
+    throw new AppError(
+      httpStatus19.FORBIDDEN,
+      "Only admin can view users"
+    );
+  }
+  const users = await prisma.user.findMany({
+    where: {
+      isDeleted: false,
+      email: {
+        not: process.env.admin_email
+      }
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      imageUrl: true,
+      phone: true,
+      address: true,
+      role: true,
+      status: true,
+      authProvider: true,
+      emailVerified: true,
+      createdAt: true,
+      updatedAt: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return users;
+};
+var getUserById = async (userId, user) => {
+  if (user.role !== "ADMIN") {
+    throw new AppError(
+      httpStatus19.FORBIDDEN,
+      "Only admin can view user details"
+    );
+  }
+  const foundUser = await prisma.user.findFirst({
+    where: {
+      id: userId,
+      isDeleted: false
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      imageUrl: true,
+      phone: true,
+      address: true,
+      role: true,
+      status: true,
+      authProvider: true,
+      emailVerified: true,
+      createdAt: true,
+      updatedAt: true
+    }
+  });
+  if (!foundUser) {
+    throw new AppError(
+      httpStatus19.NOT_FOUND,
+      "User not found"
+    );
+  }
+  return foundUser;
+};
+var updateUserStatus = async (userId, status, user) => {
+  if (user.role !== "ADMIN") {
+    throw new AppError(
+      httpStatus19.FORBIDDEN,
+      "Only admin can update user status"
+    );
+  }
+  if (user.userId === userId) {
+    throw new AppError(
+      httpStatus19.BAD_REQUEST,
+      "Admin cannot change their own status"
+    );
+  }
+  const foundUser = await prisma.user.findFirst({
+    where: {
+      id: userId,
+      isDeleted: false
+    }
+  });
+  if (!foundUser) {
+    throw new AppError(
+      httpStatus19.NOT_FOUND,
+      "User not found"
+    );
+  }
+  if (foundUser.role === "ADMIN") {
+    throw new AppError(
+      httpStatus19.FORBIDDEN,
+      "Admin user status cannot be changed"
+    );
+  }
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId
+    },
+    data: {
+      status
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      status: true,
+      updatedAt: true
+    }
+  });
+  return updatedUser;
+};
+var UserService = {
+  getAllUsers,
+  getUserById,
+  updateUserStatus
+};
+
+// src/app/module/user/user.controller.ts
+var getCurrentUser = (req) => {
+  if (!req.user) {
+    throw new AppError(
+      httpStatus20.UNAUTHORIZED,
+      "Unauthorized"
+    );
+  }
+  return req.user;
+};
+var getUserId = (req) => {
+  const userId = req.params.userId;
+  if (typeof userId !== "string") {
+    throw new AppError(
+      httpStatus20.BAD_REQUEST,
+      "Invalid user ID"
+    );
+  }
+  return userId;
+};
+var getAllUsers2 = catchAsync(
+  async (req, res) => {
+    const user = getCurrentUser(req);
+    const result = await UserService.getAllUsers(user);
+    res.status(httpStatus20.OK).json({
+      success: true,
+      statusCode: httpStatus20.OK,
+      message: "Users retrieved successfully",
+      data: result
+    });
+  }
+);
+var getUserById2 = catchAsync(
+  async (req, res) => {
+    const user = getCurrentUser(req);
+    const userId = getUserId(req);
+    const result = await UserService.getUserById(
+      userId,
+      user
+    );
+    res.status(httpStatus20.OK).json({
+      success: true,
+      statusCode: httpStatus20.OK,
+      message: "User retrieved successfully",
+      data: result
+    });
+  }
+);
+var updateUserStatus2 = catchAsync(
+  async (req, res) => {
+    const user = getCurrentUser(req);
+    const userId = getUserId(req);
+    const result = await UserService.updateUserStatus(
+      userId,
+      req.body.status,
+      user
+    );
+    res.status(httpStatus20.OK).json({
+      success: true,
+      statusCode: httpStatus20.OK,
+      message: "User status updated successfully",
+      data: result
+    });
+  }
+);
+var UserController = {
+  getAllUsers: getAllUsers2,
+  getUserById: getUserById2,
+  updateUserStatus: updateUserStatus2
+};
+
+// src/app/module/user/user.validation.ts
+import { z as z3 } from "zod";
+var updateUserStatusSchema = z3.object({
+  status: z3.enum(["ACTIVE", "BLOCKED"])
+});
+
+// src/app/module/user/user.route.ts
+var router8 = Router8();
+router8.get(
+  "/",
+  auth("ADMIN"),
+  UserController.getAllUsers
+);
+router8.get(
+  "/:userId",
+  auth("ADMIN"),
+  UserController.getUserById
+);
+router8.patch(
+  "/:userId/status",
+  auth("ADMIN"),
+  validateRequest(updateUserStatusSchema),
+  UserController.updateUserStatus
+);
+var UserRoutes = router8;
+
 // src/app.ts
 var app = express();
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true
-}));
+var allowedOrigin = process.env.FRONTEND_URL || "http://localhost:3000";
+app.use(
+  cors({
+    origin: allowedOrigin,
+    credentials: true
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 app.get("/", (_req, res) => {
@@ -3420,6 +3732,7 @@ app.get("/api-docs", (_req, res) => {
     </html>
   `);
 });
+app.use("/api/users", UserRoutes);
 app.use("/api/auth", AuthRoutes);
 app.use("/api/donation-requests", DonationRequestRoutes);
 app.use("/api/admin", AdminRoutes);

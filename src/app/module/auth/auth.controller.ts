@@ -7,7 +7,6 @@ import { sendResponse } from "../../utils/sendResponse.js";
 
 import type { IRequestUser } from "./auth.interface.js";
 import { AuthService } from "./auth.service.js";
-import config from "../../config/index.js";
 
 const registerUser = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
@@ -28,17 +27,19 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
 
 	const { accessToken, refreshToken, user } = result;
 
+	const isProduction = process.env.NODE_ENV === "production";
+
 	res.cookie("accessToken", accessToken, {
 		httpOnly: true,
-		secure: false,
-		sameSite: "lax",
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
 		maxAge: 1000 * 60 * 60 * 24,
 	});
 
 	res.cookie("refreshToken", refreshToken, {
 		httpOnly: true,
-		secure: false,
-		sameSite: "lax",
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
 		maxAge: 1000 * 60 * 60 * 24 * 7,
 	});
 
@@ -48,8 +49,6 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
 		message: "Email verified successfully",
 		data: {
 			user,
-			accessToken,
-			refreshToken,
 		},
 	});
 });
@@ -61,19 +60,21 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 
 	const { accessToken, refreshToken, user } = result;
 
+	const isProduction = process.env.NODE_ENV === "production";
+
 	// Access token cookie
 	res.cookie("accessToken", accessToken, {
 		httpOnly: true,
-		secure: false,
-		sameSite: "lax",
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
 		maxAge: 1000 * 60 * 60 * 24,
 	});
 
 	// Refresh token cookie
 	res.cookie("refreshToken", refreshToken, {
 		httpOnly: true,
-		secure: false,
-		sameSite: "lax",
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
 		maxAge: 1000 * 60 * 60 * 24 * 7,
 	});
 
@@ -83,8 +84,6 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 		message: "User logged in successfully",
 		data: {
 			user,
-			accessToken,
-			refreshToken,
 		},
 	});
 });
@@ -179,17 +178,19 @@ const demoLogin = catchAsync(async (req: Request, res: Response) => {
 
 	const { accessToken, refreshToken, user } = result;
 
+	const isProduction = process.env.NODE_ENV === "production";
+
 	res.cookie("accessToken", accessToken, {
 		httpOnly: true,
-		secure: false,
-		sameSite: "lax",
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
 		maxAge: 1000 * 60 * 60 * 24,
 	});
 
 	res.cookie("refreshToken", refreshToken, {
 		httpOnly: true,
-		secure: false,
-		sameSite: "lax",
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
 		maxAge: 1000 * 60 * 60 * 24 * 7,
 	});
 
@@ -203,16 +204,18 @@ const demoLogin = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 const logout = catchAsync(async (_req: Request, res: Response) => {
+	const isProduction = process.env.NODE_ENV === "production";
+
 	res.clearCookie("accessToken", {
 		httpOnly: true,
-		secure: false,
-		sameSite: "lax",
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
 	});
 
 	res.clearCookie("refreshToken", {
 		httpOnly: true,
-		secure: false,
-		sameSite: "lax",
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
 	});
 
 	sendResponse(res, {
@@ -227,19 +230,21 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 
 	const result = await AuthService.googleLogin(payload);
 
-	const { accessToken, refreshToken } = result;
+	const { accessToken, refreshToken, user } = result;
+
+	const isProduction = process.env.NODE_ENV === "production";
 
 	res.cookie("accessToken", accessToken, {
 		httpOnly: true,
-		secure: false,
-		sameSite: "lax",
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
 		maxAge: 1000 * 60 * 60 * 24,
 	});
 
 	res.cookie("refreshToken", refreshToken, {
 		httpOnly: true,
-		secure: false,
-		sameSite: "lax",
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
 		maxAge: 1000 * 60 * 60 * 24 * 7,
 	});
 
@@ -248,8 +253,7 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 		success: true,
 		message: "Google login successful",
 		data: {
-			accessToken,
-			refreshToken,
+			user,
 		},
 	});
 });
