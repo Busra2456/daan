@@ -776,7 +776,14 @@ var config_default = {
   bkash_password: process.env.BKASH_PASSWORD,
   bkash_app_key: process.env.BKASH_APP_KEY,
   bkash_app_secret: process.env.BKASH_APP_SECRET,
-  bkash_callback_url: process.env.BKASH_CALLBACK_URL
+  bkash_callback_url: process.env.BKASH_CALLBACK_URL,
+  sslcommerz_store_id: process.env.SSLCOMMERZ_STORE_ID,
+  sslcommerz_store_password: process.env.SSLCOMMERZ_STORE_PASSWORD,
+  sslcommerz_is_live: process.env.SSLCOMMERZ_IS_LIVE === "true",
+  sslcommerz_success_url: process.env.SSLCOMMERZ_SUCCESS_URL || "http://localhost:5000/api/payment/sslcommerz/success",
+  sslcommerz_fail_url: process.env.SSLCOMMERZ_FAIL_URL || "http://localhost:5000/api/payment/sslcommerz/fail",
+  sslcommerz_cancel_url: process.env.SSLCOMMERZ_CANCEL_URL || "http://localhost:5000/api/payment/sslcommerz/cancel",
+  sslcommerz_ipn_url: process.env.SSLCOMMERZ_IPN_URL || "http://localhost:5000/api/payment/sslcommerz/ipn"
 };
 
 // src/app/lib/prisma.ts
