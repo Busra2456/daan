@@ -3685,6 +3685,319 @@ router8.patch(
 );
 var UserRoutes = router8;
 
+// src/app/module/payment/sslcommerz.route.ts
+import { Router as Router9 } from "express";
+
+// src/app/module/payment/sslcommerz.controller.ts
+import httpStatus22 from "http-status";
+
+// src/app/module/payment/sslcommerz.service.ts
+import httpStatus21 from "http-status";
+import SSLCommerzPayment from "sslcommerz-lts";
+var createSSLCommerzPayment = async (donationId, user) => {
+  const donation = await prisma.donation.findUnique({
+    where: {
+      id: donationId
+    },
+    include: {
+      request: true,
+      donor: true
+    }
+  });
+  if (!donation) {
+    throw new AppError(httpStatus21.NOT_FOUND, "Donation not found");
+  }
+  if (donation.donorId !== user.userId) {
+    throw new AppError(
+      httpStatus21.FORBIDDEN,
+      "You are not allowed to pay for this donation"
+    );
+  }
+  if (donation.status !== "PENDING") {
+    throw new AppError(
+      httpStatus21.BAD_REQUEST,
+      "This donation is not available for payment"
+    );
+  }
+  if (donation.request.status !== "VERIFIED") {
+    throw new AppError(
+      httpStatus21.BAD_REQUEST,
+      "Donation request is not verified"
+    );
+  }
+  const storeId = config_default.sslcommerz_store_id;
+  const storePassword = config_default.sslcommerz_store_password;
+  const isLive = config_default.sslcommerz_is_live;
+  if (!storeId || !storePassword) {
+    throw new AppError(
+      httpStatus21.INTERNAL_SERVER_ERROR,
+      "SSLCommerz credentials are not configured"
+    );
+  }
+  const tranId = `DAAN-${donation.id}-${Date.now()}`;
+  const sslcz = new SSLCommerzPayment(
+    storeId,
+    storePassword,
+    isLive
+  );
+  const paymentData = {
+    total_amount: Number(donation.amount),
+    currency: "BDT",
+    tran_id: tranId,
+    success_url: config_default.sslcommerz_success_url,
+    fail_url: config_default.sslcommerz_fail_url,
+    cancel_url: config_default.sslcommerz_cancel_url,
+    ipn_url: config_default.sslcommerz_ipn_url,
+    shipping_method: "NO",
+    product_name: "Daan Donation",
+    product_category: "Donation",
+    product_profile: "general",
+    cus_name: donation.donor.name,
+    cus_email: donation.donor.email,
+    cus_add1: "Dhaka",
+    cus_city: "Dhaka",
+    cus_state: "Dhaka",
+    cus_postcode: "1000",
+    cus_country: "Bangladesh",
+    cus_phone: donation.donor.phone || "01700000000",
+    ship_name: donation.donor.name,
+    ship_add1: "Dhaka",
+    ship_city: "Dhaka",
+    ship_state: "Dhaka",
+    ship_postcode: "1000",
+    ship_country: "Bangladesh"
+  };
+  try {
+    const response = await sslcz.init(paymentData);
+    if (!response?.GatewayPageURL) {
+      throw new AppError(
+        httpStatus21.BAD_GATEWAY,
+        "Failed to create SSLCommerz payment"
+      );
+    }
+    await prisma.donation.update({
+      where: {
+        id: donation.id
+      },
+      data: {
+        paymentId: tranId,
+        paymentStatus: "INITIATED"
+      }
+    });
+    return {
+      donationId: donation.id,
+      paymentId: tranId,
+      sslcommerzURL: response.GatewayPageURL
+    };
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    console.error("SSLCommerz payment creation error:", error);
+    throw new AppError(
+      httpStatus21.BAD_GATEWAY,
+      "SSLCommerz payment creation failed"
+    );
+  }
+};
+var validateSSLCommerzPayment = async (paymentData) => {
+  const tranId = paymentData.tran_id;
+  if (!tranId) {
+    throw new AppError(
+      httpStatus21.BAD_REQUEST,
+      "Transaction ID is missing"
+    );
+  }
+  const donation = await prisma.donation.findFirst({
+    where: {
+      paymentId: tranId
+    }
+  });
+  if (!donation) {
+    throw new AppError(
+      httpStatus21.NOT_FOUND,
+      "Donation not found"
+    );
+  }
+  if (donation.status === "COMPLETED") {
+    return donation;
+  }
+  if (!paymentData.val_id) {
+    throw new AppError(
+      httpStatus21.BAD_REQUEST,
+      "SSLCommerz validation ID is missing"
+    );
+  }
+  const storeId = config_default.sslcommerz_store_id;
+  const storePassword = config_default.sslcommerz_store_password;
+  const isLive = config_default.sslcommerz_is_live;
+  if (!storeId || !storePassword) {
+    throw new AppError(
+      httpStatus21.INTERNAL_SERVER_ERROR,
+      "SSLCommerz credentials are not configured"
+    );
+  }
+  const sslcz = new SSLCommerzPayment(
+    storeId,
+    storePassword,
+    isLive
+  );
+  const validation = await sslcz.validate({
+    val_id: paymentData.val_id
+  });
+  if (validation.status !== "VALID" && validation.status !== "VALIDATED") {
+    await prisma.donation.update({
+      where: {
+        id: donation.id
+      },
+      data: {
+        paymentStatus: "FAILED"
+      }
+    });
+    throw new AppError(
+      httpStatus21.BAD_REQUEST,
+      "SSLCommerz payment validation failed"
+    );
+  }
+  if (validation.tran_id !== donation.paymentId) {
+    throw new AppError(
+      httpStatus21.BAD_REQUEST,
+      "Transaction ID mismatch"
+    );
+  }
+  const updatedDonation = await prisma.donation.update({
+    where: {
+      id: donation.id
+    },
+    data: {
+      status: "COMPLETED",
+      paymentStatus: "COMPLETED",
+      paymentId: validation.tran_id
+    }
+  });
+  return updatedDonation;
+};
+var markPaymentAsFailed = async (tranId) => {
+  if (!tranId) {
+    return null;
+  }
+  const donation = await prisma.donation.findFirst({
+    where: {
+      paymentId: tranId
+    }
+  });
+  if (!donation) {
+    return null;
+  }
+  if (donation.status === "COMPLETED") {
+    return donation;
+  }
+  return prisma.donation.update({
+    where: {
+      id: donation.id
+    },
+    data: {
+      paymentStatus: "FAILED"
+    }
+  });
+};
+var SSLCommerzService = {
+  createSSLCommerzPayment,
+  validateSSLCommerzPayment,
+  markPaymentAsFailed
+};
+
+// src/app/module/payment/sslcommerz.controller.ts
+var createPayment3 = catchAsync(async (req, res) => {
+  const user = req.user;
+  const result = await SSLCommerzService.createSSLCommerzPayment(
+    req.params.donationId,
+    user
+  );
+  sendResponse(res, {
+    statusCode: httpStatus22.OK,
+    success: true,
+    message: "SSLCommerz payment created successfully",
+    data: result
+  });
+});
+var success = catchAsync(async (req, res) => {
+  const donation = await SSLCommerzService.validateSSLCommerzPayment({
+    val_id: req.body.val_id,
+    tran_id: req.body.tran_id,
+    status: req.body.status,
+    amount: req.body.amount,
+    currency: req.body.currency
+  });
+  return res.redirect(
+    `${config_default.frontend_url}/payment-success?donationId=${donation.id}`
+  );
+});
+var fail = catchAsync(async (req, res) => {
+  await SSLCommerzService.markPaymentAsFailed(
+    req.body.tran_id
+  );
+  return res.redirect(
+    `${config_default.frontend_url}/payment-failed`
+  );
+});
+var cancel = catchAsync(async (req, res) => {
+  await SSLCommerzService.markPaymentAsFailed(
+    req.body.tran_id
+  );
+  return res.redirect(
+    `${config_default.frontend_url}/payment-cancelled`
+  );
+});
+var ipn = catchAsync(async (req, res) => {
+  const donation = await SSLCommerzService.validateSSLCommerzPayment({
+    val_id: req.body.val_id,
+    tran_id: req.body.tran_id,
+    status: req.body.status,
+    amount: req.body.amount,
+    currency: req.body.currency
+  });
+  return res.status(httpStatus22.OK).json({
+    success: true,
+    message: "SSLCommerz IPN processed successfully",
+    data: {
+      donationId: donation.id
+    }
+  });
+});
+var SSLCommerzController = {
+  createPayment: createPayment3,
+  success,
+  fail,
+  cancel,
+  ipn
+};
+
+// src/app/module/payment/sslcommerz.route.ts
+var router9 = Router9();
+router9.post(
+  "/create/:donationId",
+  auth(Role.DONOR),
+  SSLCommerzController.createPayment
+);
+router9.post(
+  "/success",
+  SSLCommerzController.success
+);
+router9.post(
+  "/fail",
+  SSLCommerzController.fail
+);
+router9.post(
+  "/cancel",
+  SSLCommerzController.cancel
+);
+router9.post(
+  "/ipn",
+  SSLCommerzController.ipn
+);
+var SSLCommerzRoutes = router9;
+
 // src/app.ts
 var app = express();
 var allowedOrigin = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -3742,6 +4055,7 @@ app.use("/api/donor", DonorRoutes);
 app.use("/api/donations", DonationRoutes);
 app.use("/api/communication", CommunicationRoutes);
 app.use("/api/payments", PaymentRoutes);
+app.use("/api/payment/sslcommerz", SSLCommerzRoutes);
 app.use(globalErrorHandler);
 var app_default = app;
 

@@ -12,6 +12,7 @@ import { DonationRequestRoutes } from "./app/module/donationRequest/donationRequ
 import { DonorRoutes } from "./app/module/donor/donor.route.js";
 import { PaymentRoutes } from "./app/module/payment/payment.route.js";
 import { UserRoutes } from "./app/module/user/user.route.js";
+import { SSLCommerzRoutes } from "./app/module/payment/sslcommerz.route.js";
 
 const app = express();
 const allowedOrigin =
@@ -75,6 +76,7 @@ app.use("/api/donor", DonorRoutes);
 app.use("/api/donations", DonationRoutes);
 app.use("/api/communication", CommunicationRoutes);
 app.use("/api/payments", PaymentRoutes);
+app.use("/api/payment/sslcommerz",SSLCommerzRoutes);
 app.use(globalErrorHandler);
 
 export default app;
