@@ -47,9 +47,10 @@ demo_needy_password: process.env.DEMO_NEEDY_PASSWORD,
 	bkash_app_secret: process.env.BKASH_APP_SECRET!,
 	bkash_callback_url: process.env.BKASH_CALLBACK_URL!,
 
-	sslcommerz_store_id: process.env.SSLCOMMERZ_STORE_ID,
-sslcommerz_store_password: process.env.SSLCOMMERZ_STORE_PASSWORD,
-sslcommerz_is_live: process.env.SSLCOMMERZ_IS_LIVE === "true",
+	sslcommerz_store_id: process.env.SSL_STORE_ID,
+sslcommerz_store_password: process.env.SSL_STORE_PASSWORD,
+// sslcommerz_is_live: process.env.SSLCOMMERZ_IS_LIVE === "true",
+sslcommerz_is_live: process.env.SSL_IS_LIVE === "true",
 
 sslcommerz_success_url:
 	process.env.SSLCOMMERZ_SUCCESS_URL ||
