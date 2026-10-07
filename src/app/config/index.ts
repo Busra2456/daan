@@ -54,17 +54,17 @@ sslcommerz_is_live: process.env.SSL_IS_LIVE === "true",
 
 sslcommerz_success_url:
 	process.env.SSLCOMMERZ_SUCCESS_URL ||
-	"http://localhost:5000/api/payment/sslcommerz/success",
+	"https://daan-7z6n.vercel.app/api/payment/sslcommerz/success",
 
 sslcommerz_fail_url:
 	process.env.SSLCOMMERZ_FAIL_URL ||
-	"http://localhost:5000/api/payment/sslcommerz/fail",
+	"https://daan-7z6n.vercel.app/api/payment/sslcommerz/fail",
 
 sslcommerz_cancel_url:
 	process.env.SSLCOMMERZ_CANCEL_URL ||
-	"http://localhost:5000/api/payment/sslcommerz/cancel",
+	"https://daan-7z6n.vercel.app/api/payment/sslcommerz/cancel",
 
 sslcommerz_ipn_url:
 	process.env.SSLCOMMERZ_IPN_URL ||
-	"http://localhost:5000/api/payment/sslcommerz/ipn",
+	"https://daan-7z6n.vercel.app/api/payment/sslcommerz/ipn",
 };
