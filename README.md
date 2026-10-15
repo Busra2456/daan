@@ -287,13 +287,6 @@ NEEDY
 DONOR
 ADMIN
 ```
-## Demo Admin Credentials
-
-
-Email: daan@gmail.com,
-Password: Daan@123Busra
-
-Role: ADMIN
 
 ## Deployment
 
