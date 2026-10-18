@@ -96,28 +96,44 @@ const getMyDonationRequests = catchAsync(
 	},
 );
 
+
 const getVerifiedDonationRequests = catchAsync(
-	async (req: Request, res: Response) => {
-		const user = req.user as unknown as IRequestUser;
+  async (_req: Request, res: Response) => {
+    const result =
+      await DonationRequestService.getVerifiedDonationRequests();
 
-		if (!user) {
-			throw new AppError(
-				httpStatus.UNAUTHORIZED,
-				"User information is missing in the request",
-			);
-		}
-
-		const result =
-			await DonationRequestService.getVerifiedDonationRequests();
-
-		sendResponse(res, {
-			statusCode: httpStatus.OK,
-			success: true,
-			message: "Verified donation requests retrieved successfully",
-			data: result,
-		});
-	},
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Verified donation requests retrieved successfully",
+      data: result,
+    });
+  },
 );
+
+
+// const getVerifiedDonationRequests = catchAsync(
+// 	async (req: Request, res: Response) => {
+// 		const user = req.user as unknown as IRequestUser;
+
+// 		if (!user) {
+// 			throw new AppError(
+// 				httpStatus.UNAUTHORIZED,
+// 				"User information is missing in the request",
+// 			);
+// 		}
+
+// 		const result =
+// 			await DonationRequestService.getVerifiedDonationRequests();
+
+// 		sendResponse(res, {
+// 			statusCode: httpStatus.OK,
+// 			success: true,
+// 			message: "Verified donation requests retrieved successfully",
+// 			data: result,
+// 		});
+// 	},
+// );
 
 const deleteDonationRequest = catchAsync(
 	async (req: Request, res: Response) => {

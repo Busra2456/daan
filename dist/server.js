@@ -2920,14 +2920,7 @@ var getMyDonationRequests2 = catchAsync(
   }
 );
 var getVerifiedDonationRequests2 = catchAsync(
-  async (req, res) => {
-    const user = req.user;
-    if (!user) {
-      throw new AppError(
-        httpStatus13.UNAUTHORIZED,
-        "User information is missing in the request"
-      );
-    }
+  async (_req, res) => {
     const result = await DonationRequestService.getVerifiedDonationRequests();
     sendResponse(res, {
       statusCode: httpStatus13.OK,
