@@ -14,7 +14,7 @@ router.post(
 
 router.get(
 	"/verified",
-	auth(Role.DONOR),
+	// auth(Role.DONOR),
 	DonationRequestController.getVerifiedDonationRequests,
 );
 

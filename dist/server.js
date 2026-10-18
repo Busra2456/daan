@@ -2969,7 +2969,7 @@ router5.post(
 );
 router5.get(
   "/verified",
-  auth(Role.DONOR),
+  // auth(Role.DONOR),
   DonationRequestController.getVerifiedDonationRequests
 );
 router5.get(
