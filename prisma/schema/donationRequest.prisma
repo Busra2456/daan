@@ -3,7 +3,8 @@ model DonationRequest {
   title          String
   description    String
   requiredAmount Decimal @db.Decimal(12, 2)
-
+  
+  situationImage String?
   situationVideo String?
   situationAudio String?
 

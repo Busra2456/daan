@@ -4,7 +4,8 @@ export interface ICreateDonationRequestPayload {
 	title: string;
 	description: string;
 	requiredAmount: number;
-	situationVideo?: string;
+	situationImage?: string | null;
+      situationVideo?: string;
 	situationAudio?: string;
 }
 
@@ -12,6 +13,7 @@ export interface IUpdateDonationRequestPayload {
 	title?: string;
 	description?: string;
 	requiredAmount?: number;
+	situationImage?: string | null;
 	situationVideo?: string;
 	situationAudio?: string;
 }

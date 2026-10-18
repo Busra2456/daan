@@ -39,6 +39,7 @@ export const DonationRequestStatus = {
   PENDING: 'PENDING',
   VERIFIED: 'VERIFIED',
   REJECTED: 'REJECTED',
+  DONATIONS: 'DONATIONS',
   COMPLETED: 'COMPLETED'
 } as const
 

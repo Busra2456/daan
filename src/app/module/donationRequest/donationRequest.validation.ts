@@ -41,7 +41,7 @@ const updateDonationRequestZodSchema = z.object({
     .number("Required amount must be a number")
     .positive("Required amount must be greater than 0")
     .optional(),
-
+situationImage: z.string().url().optional().nullable(),
   situationVideo: z
     .string("Situation video must be a string")
     .url("Situation video must be a valid URL")

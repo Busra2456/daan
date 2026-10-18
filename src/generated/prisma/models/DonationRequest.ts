@@ -39,6 +39,7 @@ export type DonationRequestMinAggregateOutputType = {
   title: string | null
   description: string | null
   requiredAmount: runtime.Decimal | null
+  situationImage: string | null
   situationVideo: string | null
   situationAudio: string | null
   status: $Enums.DonationRequestStatus | null
@@ -55,6 +56,7 @@ export type DonationRequestMaxAggregateOutputType = {
   title: string | null
   description: string | null
   requiredAmount: runtime.Decimal | null
+  situationImage: string | null
   situationVideo: string | null
   situationAudio: string | null
   status: $Enums.DonationRequestStatus | null
@@ -71,6 +73,7 @@ export type DonationRequestCountAggregateOutputType = {
   title: number
   description: number
   requiredAmount: number
+  situationImage: number
   situationVideo: number
   situationAudio: number
   status: number
@@ -97,6 +100,7 @@ export type DonationRequestMinAggregateInputType = {
   title?: true
   description?: true
   requiredAmount?: true
+  situationImage?: true
   situationVideo?: true
   situationAudio?: true
   status?: true
@@ -113,6 +117,7 @@ export type DonationRequestMaxAggregateInputType = {
   title?: true
   description?: true
   requiredAmount?: true
+  situationImage?: true
   situationVideo?: true
   situationAudio?: true
   status?: true
@@ -129,6 +134,7 @@ export type DonationRequestCountAggregateInputType = {
   title?: true
   description?: true
   requiredAmount?: true
+  situationImage?: true
   situationVideo?: true
   situationAudio?: true
   status?: true
@@ -232,6 +238,7 @@ export type DonationRequestGroupByOutputType = {
   title: string
   description: string
   requiredAmount: runtime.Decimal
+  situationImage: string | null
   situationVideo: string | null
   situationAudio: string | null
   status: $Enums.DonationRequestStatus
@@ -271,6 +278,7 @@ export type DonationRequestWhereInput = {
   title?: Prisma.StringFilter<"DonationRequest"> | string
   description?: Prisma.StringFilter<"DonationRequest"> | string
   requiredAmount?: Prisma.DecimalFilter<"DonationRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.StringNullableFilter<"DonationRequest"> | string | null
   situationVideo?: Prisma.StringNullableFilter<"DonationRequest"> | string | null
   situationAudio?: Prisma.StringNullableFilter<"DonationRequest"> | string | null
   status?: Prisma.EnumDonationRequestStatusFilter<"DonationRequest"> | $Enums.DonationRequestStatus
@@ -291,6 +299,7 @@ export type DonationRequestOrderByWithRelationInput = {
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   requiredAmount?: Prisma.SortOrder
+  situationImage?: Prisma.SortOrderInput | Prisma.SortOrder
   situationVideo?: Prisma.SortOrderInput | Prisma.SortOrder
   situationAudio?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -314,6 +323,7 @@ export type DonationRequestWhereUniqueInput = Prisma.AtLeast<{
   title?: Prisma.StringFilter<"DonationRequest"> | string
   description?: Prisma.StringFilter<"DonationRequest"> | string
   requiredAmount?: Prisma.DecimalFilter<"DonationRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.StringNullableFilter<"DonationRequest"> | string | null
   situationVideo?: Prisma.StringNullableFilter<"DonationRequest"> | string | null
   situationAudio?: Prisma.StringNullableFilter<"DonationRequest"> | string | null
   status?: Prisma.EnumDonationRequestStatusFilter<"DonationRequest"> | $Enums.DonationRequestStatus
@@ -334,6 +344,7 @@ export type DonationRequestOrderByWithAggregationInput = {
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   requiredAmount?: Prisma.SortOrder
+  situationImage?: Prisma.SortOrderInput | Prisma.SortOrder
   situationVideo?: Prisma.SortOrderInput | Prisma.SortOrder
   situationAudio?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -358,6 +369,7 @@ export type DonationRequestScalarWhereWithAggregatesInput = {
   title?: Prisma.StringWithAggregatesFilter<"DonationRequest"> | string
   description?: Prisma.StringWithAggregatesFilter<"DonationRequest"> | string
   requiredAmount?: Prisma.DecimalWithAggregatesFilter<"DonationRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.StringNullableWithAggregatesFilter<"DonationRequest"> | string | null
   situationVideo?: Prisma.StringNullableWithAggregatesFilter<"DonationRequest"> | string | null
   situationAudio?: Prisma.StringNullableWithAggregatesFilter<"DonationRequest"> | string | null
   status?: Prisma.EnumDonationRequestStatusWithAggregatesFilter<"DonationRequest"> | $Enums.DonationRequestStatus
@@ -374,6 +386,7 @@ export type DonationRequestCreateInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -392,6 +405,7 @@ export type DonationRequestUncheckedCreateInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -410,6 +424,7 @@ export type DonationRequestUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -428,6 +443,7 @@ export type DonationRequestUncheckedUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -446,6 +462,7 @@ export type DonationRequestCreateManyInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -462,6 +479,7 @@ export type DonationRequestUpdateManyMutationInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -476,6 +494,7 @@ export type DonationRequestUncheckedUpdateManyInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -497,6 +516,7 @@ export type DonationRequestCountOrderByAggregateInput = {
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   requiredAmount?: Prisma.SortOrder
+  situationImage?: Prisma.SortOrder
   situationVideo?: Prisma.SortOrder
   situationAudio?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -517,6 +537,7 @@ export type DonationRequestMaxOrderByAggregateInput = {
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   requiredAmount?: Prisma.SortOrder
+  situationImage?: Prisma.SortOrder
   situationVideo?: Prisma.SortOrder
   situationAudio?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -533,6 +554,7 @@ export type DonationRequestMinOrderByAggregateInput = {
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   requiredAmount?: Prisma.SortOrder
+  situationImage?: Prisma.SortOrder
   situationVideo?: Prisma.SortOrder
   situationAudio?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -683,6 +705,7 @@ export type DonationRequestCreateWithoutConversationsInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -700,6 +723,7 @@ export type DonationRequestUncheckedCreateWithoutConversationsInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -733,6 +757,7 @@ export type DonationRequestUpdateWithoutConversationsInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -750,6 +775,7 @@ export type DonationRequestUncheckedUpdateWithoutConversationsInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -767,6 +793,7 @@ export type DonationRequestCreateWithoutDonationsInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -784,6 +811,7 @@ export type DonationRequestUncheckedCreateWithoutDonationsInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -817,6 +845,7 @@ export type DonationRequestUpdateWithoutDonationsInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -834,6 +863,7 @@ export type DonationRequestUncheckedUpdateWithoutDonationsInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -851,6 +881,7 @@ export type DonationRequestCreateWithoutNeedyInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -868,6 +899,7 @@ export type DonationRequestUncheckedCreateWithoutNeedyInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -895,6 +927,7 @@ export type DonationRequestCreateWithoutReviewedByInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -912,6 +945,7 @@ export type DonationRequestUncheckedCreateWithoutReviewedByInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -958,6 +992,7 @@ export type DonationRequestScalarWhereInput = {
   title?: Prisma.StringFilter<"DonationRequest"> | string
   description?: Prisma.StringFilter<"DonationRequest"> | string
   requiredAmount?: Prisma.DecimalFilter<"DonationRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.StringNullableFilter<"DonationRequest"> | string | null
   situationVideo?: Prisma.StringNullableFilter<"DonationRequest"> | string | null
   situationAudio?: Prisma.StringNullableFilter<"DonationRequest"> | string | null
   status?: Prisma.EnumDonationRequestStatusFilter<"DonationRequest"> | $Enums.DonationRequestStatus
@@ -990,6 +1025,7 @@ export type DonationRequestCreateManyNeedyInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -1005,6 +1041,7 @@ export type DonationRequestCreateManyReviewedByInput = {
   title: string
   description: string
   requiredAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: string | null
   situationVideo?: string | null
   situationAudio?: string | null
   status?: $Enums.DonationRequestStatus
@@ -1020,6 +1057,7 @@ export type DonationRequestUpdateWithoutNeedyInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -1037,6 +1075,7 @@ export type DonationRequestUncheckedUpdateWithoutNeedyInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -1054,6 +1093,7 @@ export type DonationRequestUncheckedUpdateManyWithoutNeedyInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -1069,6 +1109,7 @@ export type DonationRequestUpdateWithoutReviewedByInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -1086,6 +1127,7 @@ export type DonationRequestUncheckedUpdateWithoutReviewedByInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -1103,6 +1145,7 @@ export type DonationRequestUncheckedUpdateManyWithoutReviewedByInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   requiredAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  situationImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationVideo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   situationAudio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDonationRequestStatusFieldUpdateOperationsInput | $Enums.DonationRequestStatus
@@ -1158,6 +1201,7 @@ export type DonationRequestSelect<ExtArgs extends runtime.Types.Extensions.Inter
   title?: boolean
   description?: boolean
   requiredAmount?: boolean
+  situationImage?: boolean
   situationVideo?: boolean
   situationAudio?: boolean
   status?: boolean
@@ -1179,6 +1223,7 @@ export type DonationRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   title?: boolean
   description?: boolean
   requiredAmount?: boolean
+  situationImage?: boolean
   situationVideo?: boolean
   situationAudio?: boolean
   status?: boolean
@@ -1197,6 +1242,7 @@ export type DonationRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   title?: boolean
   description?: boolean
   requiredAmount?: boolean
+  situationImage?: boolean
   situationVideo?: boolean
   situationAudio?: boolean
   status?: boolean
@@ -1215,6 +1261,7 @@ export type DonationRequestSelectScalar = {
   title?: boolean
   description?: boolean
   requiredAmount?: boolean
+  situationImage?: boolean
   situationVideo?: boolean
   situationAudio?: boolean
   status?: boolean
@@ -1226,7 +1273,7 @@ export type DonationRequestSelectScalar = {
   updatedAt?: boolean
 }
 
-export type DonationRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "requiredAmount" | "situationVideo" | "situationAudio" | "status" | "rejectionReason" | "reviewedAt" | "needyId" | "reviewedById" | "createdAt" | "updatedAt", ExtArgs["result"]["donationRequest"]>
+export type DonationRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "requiredAmount" | "situationImage" | "situationVideo" | "situationAudio" | "status" | "rejectionReason" | "reviewedAt" | "needyId" | "reviewedById" | "createdAt" | "updatedAt", ExtArgs["result"]["donationRequest"]>
 export type DonationRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   needy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   reviewedBy?: boolean | Prisma.DonationRequest$reviewedByArgs<ExtArgs>
@@ -1256,6 +1303,7 @@ export type $DonationRequestPayload<ExtArgs extends runtime.Types.Extensions.Int
     title: string
     description: string
     requiredAmount: runtime.Decimal
+    situationImage: string | null
     situationVideo: string | null
     situationAudio: string | null
     status: $Enums.DonationRequestStatus
@@ -1696,6 +1744,7 @@ export interface DonationRequestFieldRefs {
   readonly title: Prisma.FieldRef<"DonationRequest", 'String'>
   readonly description: Prisma.FieldRef<"DonationRequest", 'String'>
   readonly requiredAmount: Prisma.FieldRef<"DonationRequest", 'Decimal'>
+  readonly situationImage: Prisma.FieldRef<"DonationRequest", 'String'>
   readonly situationVideo: Prisma.FieldRef<"DonationRequest", 'String'>
   readonly situationAudio: Prisma.FieldRef<"DonationRequest", 'String'>
   readonly status: Prisma.FieldRef<"DonationRequest", 'DonationRequestStatus'>

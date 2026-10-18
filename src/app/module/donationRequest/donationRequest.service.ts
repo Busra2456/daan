@@ -49,7 +49,8 @@ const createDonationRequest = async (
 			title: payload.title,
 			description: payload.description,
 			requiredAmount: payload.requiredAmount,
-			situationVideo: payload.situationVideo,
+			situationImage: payload.situationImage,
+                  situationVideo: payload.situationVideo,
 			situationAudio: payload.situationAudio,
 
 			// The authenticated NEEDY user's ID

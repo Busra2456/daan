@@ -131,6 +131,7 @@ export const DonationRequestScalarFieldEnum = {
   title: 'title',
   description: 'description',
   requiredAmount: 'requiredAmount',
+  situationImage: 'situationImage',
   situationVideo: 'situationVideo',
   situationAudio: 'situationAudio',
   status: 'status',
