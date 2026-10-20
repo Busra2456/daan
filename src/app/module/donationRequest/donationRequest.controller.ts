@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import httpStatus from "http-status";
-
+import { cloudinary } from "../../lib/cloudinary.js";
 import { AppError } from "../../utils/AppError.js";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { sendResponse } from "../../utils/sendResponse.js";
@@ -8,6 +8,37 @@ import { sendResponse } from "../../utils/sendResponse.js";
 import type { IRequestUser } from "../auth/auth.interface.js";
 import { DonationRequestService } from "./donationRequest.service.js";
 import { DonationRequestValidation } from "./donationRequest.validation.js";
+
+
+
+const uploadSituationImageToCloudinary = (
+  file: Express.Multer.File,
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "daan/situation-images",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        if (!result?.secure_url) {
+          reject(new Error("Image upload failed."));
+          return;
+        }
+
+        resolve(result.secure_url);
+      },
+    );
+
+    stream.end(file.buffer);
+  });
+};
+
 
 const createDonationRequest = catchAsync(
 	async (req: Request, res: Response) => {
@@ -23,8 +54,14 @@ const createDonationRequest = catchAsync(
 		const payload =
 			DonationRequestValidation.createDonationRequestZodSchema.parse(req.body);
 
+			const situationImage = req.file
+      ? await uploadSituationImageToCloudinary(req.file)
+      : undefined;
+
+
 		const result = await DonationRequestService.createDonationRequest(
-			payload,
+			{...payload,
+			situationImage,},
 			user,
 		);
 
@@ -157,5 +194,6 @@ export const DonationRequestController = {
 	updateDonationRequest,
 	deleteDonationRequest,
 	getMyDonationRequests,
-	getVerifiedDonationRequests
+	getVerifiedDonationRequests,
+	uploadSituationImageToCloudinary
 };

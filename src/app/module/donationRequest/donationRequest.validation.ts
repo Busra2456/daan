@@ -10,7 +10,7 @@ const createDonationRequestZodSchema = z.object({
 		.string("Description must be a string")
 		.min(10, "Description must be at least 10 characters long"),
 
-	requiredAmount: z
+	requiredAmount: z.coerce
 		.number("Required amount must be a number")
 		.positive("Required amount must be greater than 0"),
 
@@ -37,7 +37,7 @@ const updateDonationRequestZodSchema = z.object({
     .min(10, "Description must be at least 10 characters long")
     .optional(),
 
-  requiredAmount: z
+  requiredAmount: z.coerce
     .number("Required amount must be a number")
     .positive("Required amount must be greater than 0")
     .optional(),

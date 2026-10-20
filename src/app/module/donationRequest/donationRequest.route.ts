@@ -3,6 +3,7 @@ import { Router } from "express";
 import { Role } from "../../../generated/prisma/enums.js";
 import { auth } from "../../middleware/checkAuth.js";
 import { DonationRequestController } from "./donationRequest.controller.js";
+import { uploadSituationImage } from "../../middleware/uploadImage.js";
 
 const router = Router();
 
@@ -35,6 +36,12 @@ router.patch(
 	"/:requestId",
 	auth(Role.NEEDY),
 	DonationRequestController.updateDonationRequest,
+);
+router.post(
+  "/",
+  auth(Role.NEEDY),
+  uploadSituationImage.single("situationImage"),
+  DonationRequestController.createDonationRequest,
 );
 
 

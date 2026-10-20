@@ -2634,6 +2634,15 @@ import { Router as Router5 } from "express";
 // src/app/module/donationRequest/donationRequest.controller.ts
 import httpStatus13 from "http-status";
 
+// src/app/lib/cloudinary.ts
+import { v2 as cloudinary } from "cloudinary";
+cloudinary.config({
+  cloud_name: config_default.cloudinary_cloud_name,
+  api_key: config_default.cloudinary_api_key,
+  api_secret: config_default.cloudinary_api_secret,
+  secure: true
+});
+
 // src/app/module/donationRequest/donationRequest.service.ts
 import httpStatus12 from "http-status";
 var createDonationRequest = async (payload, user) => {
@@ -2833,14 +2842,14 @@ import z2 from "zod";
 var createDonationRequestZodSchema = z2.object({
   title: z2.string("Title must be a string").min(3, "Title must be at least 3 characters long").max(200, "Title cannot exceed 200 characters"),
   description: z2.string("Description must be a string").min(10, "Description must be at least 10 characters long"),
-  requiredAmount: z2.number("Required amount must be a number").positive("Required amount must be greater than 0"),
+  requiredAmount: z2.coerce.number("Required amount must be a number").positive("Required amount must be greater than 0"),
   situationVideo: z2.string("Situation video must be a string").url("Situation video must be a valid URL").optional(),
   situationAudio: z2.string("Situation audio must be a string").url("Situation audio must be a valid URL").optional()
 });
 var updateDonationRequestZodSchema = z2.object({
   title: z2.string("Title must be a string").min(3, "Title must be at least 3 characters long").max(200, "Title cannot exceed 200 characters").optional(),
   description: z2.string("Description must be a string").min(10, "Description must be at least 10 characters long").optional(),
-  requiredAmount: z2.number("Required amount must be a number").positive("Required amount must be greater than 0").optional(),
+  requiredAmount: z2.coerce.number("Required amount must be a number").positive("Required amount must be greater than 0").optional(),
   situationImage: z2.string().url().optional().nullable(),
   situationVideo: z2.string("Situation video must be a string").url("Situation video must be a valid URL").optional(),
   situationAudio: z2.string("Situation audio must be a string").url("Situation audio must be a valid URL").optional()
@@ -2851,6 +2860,28 @@ var DonationRequestValidation = {
 };
 
 // src/app/module/donationRequest/donationRequest.controller.ts
+var uploadSituationImageToCloudinary = (file) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "daan/situation-images",
+        resource_type: "image"
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        if (!result?.secure_url) {
+          reject(new Error("Image upload failed."));
+          return;
+        }
+        resolve(result.secure_url);
+      }
+    );
+    stream.end(file.buffer);
+  });
+};
 var createDonationRequest2 = catchAsync(
   async (req, res) => {
     const user = req.user;
@@ -2861,8 +2892,12 @@ var createDonationRequest2 = catchAsync(
       );
     }
     const payload = DonationRequestValidation.createDonationRequestZodSchema.parse(req.body);
+    const situationImage = req.file ? await uploadSituationImageToCloudinary(req.file) : void 0;
     const result = await DonationRequestService.createDonationRequest(
-      payload,
+      {
+        ...payload,
+        situationImage
+      },
       user
     );
     sendResponse(res, {
@@ -2953,8 +2988,37 @@ var DonationRequestController = {
   updateDonationRequest: updateDonationRequest2,
   deleteDonationRequest: deleteDonationRequest2,
   getMyDonationRequests: getMyDonationRequests2,
-  getVerifiedDonationRequests: getVerifiedDonationRequests2
+  getVerifiedDonationRequests: getVerifiedDonationRequests2,
+  uploadSituationImageToCloudinary
 };
+
+// src/app/middleware/uploadImage.ts
+import multer from "multer";
+var storage = multer.memoryStorage();
+var fileFilter = (_req, file, callback) => {
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
+  if (!allowedTypes.includes(file.mimetype)) {
+    return callback(
+      new AppError(
+        400,
+        "Only JPG, PNG and WebP images are allowed."
+      )
+    );
+  }
+  callback(null, true);
+};
+var uploadSituationImage = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    files: 1
+  }
+});
 
 // src/app/module/donationRequest/donationRequest.route.ts
 var router5 = Router5();
@@ -2982,6 +3046,12 @@ router5.patch(
   "/:requestId",
   auth(Role.NEEDY),
   DonationRequestController.updateDonationRequest
+);
+router5.post(
+  "/",
+  auth(Role.NEEDY),
+  uploadSituationImage.single("situationImage"),
+  DonationRequestController.createDonationRequest
 );
 router5.delete(
   "/:requestId",
