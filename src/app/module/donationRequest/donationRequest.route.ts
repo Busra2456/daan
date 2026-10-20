@@ -8,9 +8,10 @@ import { uploadSituationImage } from "../../middleware/uploadImage.js";
 const router = Router();
 
 router.post(
-	"/",
-	auth(Role.NEEDY),
-	DonationRequestController.createDonationRequest,
+  "/",
+  auth(Role.NEEDY),
+  uploadSituationImage.single("situationImage"),
+  DonationRequestController.createDonationRequest,
 );
 
 router.get(
@@ -37,12 +38,7 @@ router.patch(
 	auth(Role.NEEDY),
 	DonationRequestController.updateDonationRequest,
 );
-router.post(
-  "/",
-  auth(Role.NEEDY),
-  uploadSituationImage.single("situationImage"),
-  DonationRequestController.createDonationRequest,
-);
+
 
 
 router.delete(
