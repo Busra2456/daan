@@ -4164,9 +4164,10 @@ var chatWithDaanAI = async (req, res) => {
       });
       return;
     }
+    const selectedProvider = provider;
     const answer = await getDaanAIResponse(
       trimmedMessage,
-      provider
+      selectedProvider
     );
     res.status(200).json({
       success: true,
@@ -4182,7 +4183,9 @@ var chatWithDaanAI = async (req, res) => {
       });
       return;
     }
-    if (/\b429\b/.test(errorMessage) || /RESOURCE_EXHAUSTED|quota exceeded|rate limit/i.test(errorMessage)) {
+    if (/\b429\b/.test(errorMessage) || /RESOURCE_EXHAUSTED|quota exceeded|rate limit/i.test(
+      errorMessage
+    )) {
       res.status(429).json({
         success: false,
         message: "The selected AI provider has reached its usage limit. Please try the other provider or try again later."

@@ -27,6 +27,7 @@ export const chatWithDaanAI = async (
 
     const trimmedMessage = message.trim();
 
+    // Limit message length
     if (trimmedMessage.length > 2000) {
       res.status(400).json({
         success: false,
@@ -35,7 +36,7 @@ export const chatWithDaanAI = async (
       return;
     }
 
-    // Validate the selected AI provider
+    // Validate provider
     if (
       provider !== undefined &&
       provider !== "openai" &&
@@ -48,10 +49,11 @@ export const chatWithDaanAI = async (
       return;
     }
 
-    // Use the requested provider; the service handles the default.
+    // Generate AI response
+    const selectedProvider = provider as AIProvider | undefined;
     const answer = await getDaanAIResponse(
       trimmedMessage,
-      provider as AIProvider | undefined,
+      selectedProvider,
     );
 
     res.status(200).json({
@@ -60,11 +62,14 @@ export const chatWithDaanAI = async (
     });
   } catch (error: unknown) {
     const errorMessage =
-      error instanceof Error ? error.message : "Unknown AI service error";
+      error instanceof Error
+        ? error.message
+        : "Unknown AI service error";
 
+    // Log details only on the backend
     console.error("Daan AI error:", errorMessage);
 
-    // Missing API key/configuration
+    // Missing API configuration
     if (
       errorMessage.includes("OPENAI_API_KEY is not configured") ||
       errorMessage.includes("GEMINI_API_KEY is not configured")
@@ -77,10 +82,12 @@ export const chatWithDaanAI = async (
       return;
     }
 
-    // Provider quota/rate limit
+    // Quota or rate limit exceeded
     if (
       /\b429\b/.test(errorMessage) ||
-      /RESOURCE_EXHAUSTED|quota exceeded|rate limit/i.test(errorMessage)
+      /RESOURCE_EXHAUSTED|quota exceeded|rate limit/i.test(
+        errorMessage,
+      )
     ) {
       res.status(429).json({
         success: false,
@@ -90,7 +97,7 @@ export const chatWithDaanAI = async (
       return;
     }
 
-    // Other provider/API errors
+    // Other AI provider errors
     res.status(502).json({
       success: false,
       message:
