@@ -36,6 +36,7 @@
 		"typescript": "^7.0.2"
 	},
 	"dependencies": {
+		"@google/genai": "^2.31.0",
 		"@prisma/adapter-pg": "^7.10.0",
 		"@prisma/client": "^7.10.0",
 		"bcryptjs": "^3.0.3",
@@ -50,6 +51,7 @@
 		"jsonwebtoken": "^9.0.3",
 		"multer": "^2.4.0",
 		"nodemailer": "^10.0.9",
+		"openai": "^6.49.0",
 		"pg": "^8.23.0",
 		"redis": "^6.2.1",
 		"sslcommerz-lts": "^1.2.0",

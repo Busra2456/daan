@@ -3025,6 +3025,7 @@ var router5 = Router5();
 router5.post(
   "/",
   auth(Role.NEEDY),
+  uploadSituationImage.single("situationImage"),
   DonationRequestController.createDonationRequest
 );
 router5.get(
@@ -3046,12 +3047,6 @@ router5.patch(
   "/:requestId",
   auth(Role.NEEDY),
   DonationRequestController.updateDonationRequest
-);
-router5.post(
-  "/",
-  auth(Role.NEEDY),
-  uploadSituationImage.single("situationImage"),
-  DonationRequestController.createDonationRequest
 );
 router5.delete(
   "/:requestId",
@@ -4065,6 +4060,147 @@ router9.post(
 );
 var SSLCommerzRoutes = router9;
 
+// src/app/module/ai/ai.route.ts
+import { Router as Router10 } from "express";
+
+// src/app/module/ai/ai.service.ts
+import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
+var SYSTEM_INSTRUCTIONS = `
+You are Daan AI, the assistant for Daan \u2014 Donate with Trust.
+
+Help users understand:
+- How Daan works.
+- How needy people submit donation requests.
+- How admins review requests.
+- How donors can support verified requests.
+
+Rules:
+- Reply in the user's language, including Bangla and English.
+- Keep answers short, clear, and friendly.
+- Usually answer in 3\u20135 sentences.
+- Never invent request statuses, user details, or donation amounts.
+- Never guarantee donations.
+- Never claim to submit requests or process payments.
+- Never ask for passwords, OTPs, API keys, or payment credentials.
+- Do not claim a request is verified unless the application confirms it.
+`;
+var getOpenAIResponse = async (message) => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured.");
+  }
+  const openai = new OpenAI({ apiKey });
+  const response = await openai.responses.create({
+    model: "gpt-5.5",
+    instructions: SYSTEM_INSTRUCTIONS,
+    input: message,
+    max_output_tokens: 180
+  });
+  const answer = response.output_text?.trim();
+  if (!answer) {
+    throw new Error("OpenAI returned an empty response.");
+  }
+  return answer;
+};
+var getGeminiResponse = async (message) => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not configured.");
+  }
+  const genAI = new GoogleGenAI({ apiKey });
+  const response = await genAI.models.generateContent({
+    model: "gemini-3.8-flash",
+    contents: message,
+    config: {
+      systemInstruction: SYSTEM_INSTRUCTIONS,
+      maxOutputTokens: 180
+    }
+  });
+  const answer = response.text?.trim();
+  if (!answer) {
+    throw new Error("Gemini returned an empty response.");
+  }
+  return answer;
+};
+var getDaanAIResponse = async (message, requestedProvider) => {
+  const configuredProvider = (process.env.AI_PROVIDER || "gemini").toLowerCase();
+  const provider = requestedProvider ?? configuredProvider;
+  switch (provider) {
+    case "openai":
+      return getOpenAIResponse(message);
+    case "gemini":
+      return getGeminiResponse(message);
+    default:
+      throw new Error(
+        `Unsupported AI provider: ${provider}. Use "openai" or "gemini".`
+      );
+  }
+};
+
+// src/app/module/ai/ai.controller.ts
+var chatWithDaanAI = async (req, res) => {
+  try {
+    const { message, provider } = req.body;
+    if (typeof message !== "string" || !message.trim()) {
+      res.status(400).json({
+        success: false,
+        message: "Please enter a message."
+      });
+      return;
+    }
+    const trimmedMessage = message.trim();
+    if (trimmedMessage.length > 2e3) {
+      res.status(400).json({
+        success: false,
+        message: "Message must be 2000 characters or fewer."
+      });
+      return;
+    }
+    if (provider !== void 0 && provider !== "openai" && provider !== "gemini") {
+      res.status(400).json({
+        success: false,
+        message: "Invalid AI provider. Choose OpenAI or Gemini."
+      });
+      return;
+    }
+    const answer = await getDaanAIResponse(
+      trimmedMessage,
+      provider
+    );
+    res.status(200).json({
+      success: true,
+      message: answer
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown AI service error";
+    console.error("Daan AI error:", errorMessage);
+    if (errorMessage.includes("OPENAI_API_KEY is not configured") || errorMessage.includes("GEMINI_API_KEY is not configured")) {
+      res.status(503).json({
+        success: false,
+        message: "The selected AI provider is not configured. Please check the backend environment variables."
+      });
+      return;
+    }
+    if (/\b429\b/.test(errorMessage) || /RESOURCE_EXHAUSTED|quota exceeded|rate limit/i.test(errorMessage)) {
+      res.status(429).json({
+        success: false,
+        message: "The selected AI provider has reached its usage limit. Please try the other provider or try again later."
+      });
+      return;
+    }
+    res.status(502).json({
+      success: false,
+      message: "The AI service is temporarily unavailable. Please try again later."
+    });
+  }
+};
+
+// src/app/module/ai/ai.route.ts
+var router10 = Router10();
+router10.post("/chat", chatWithDaanAI);
+var AIAssistantRoutes = router10;
+
 // src/app.ts
 var app = express();
 var allowedOrigin = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -4124,6 +4260,7 @@ app.use("/api/donations", DonationRoutes);
 app.use("/api/communication", CommunicationRoutes);
 app.use("/api/payments", PaymentRoutes);
 app.use("/api/payment/sslcommerz", SSLCommerzRoutes);
+app.use("/api/ai", AIAssistantRoutes);
 app.use(globalErrorHandler);
 var app_default = app;
 
